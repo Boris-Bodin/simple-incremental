@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ACHIEVEMENT_BONUS, CRIT_MULTIPLIER, PRESTIGE_ORE_PER_POINT } from './config';
+import {
+  ACHIEVEMENT_BONUS,
+  CRIT_MULTIPLIER,
+  DAILY_CHALLENGES_BY_ID,
+  PRESTIGE_ORE_PER_POINT,
+} from './config';
+import { dailyChallengeIds } from './daily';
 import {
   achievementMultiplier,
   activateBoost,
@@ -7,9 +13,13 @@ import {
   ascensionGain,
   canAscend,
   canRefine,
+  claimDailyChallenge,
   crystalMultiplier,
   currentEra,
+  dailyChallengeProgress,
   doAscension,
+  isDailyChallengeComplete,
+  refreshDaily,
   ingotCost,
   ingotMultiplier,
   refine,
@@ -512,6 +522,51 @@ describe('ascension', () => {
   it('folds crystals into the global multiplier', () => {
     expect(crystalMultiplier(withState({ crystals: 3 }))).toBeCloseTo(1.3);
     expect(globalMultiplier(withState({ crystals: 3 }))).toBeCloseTo(1.3);
+  });
+});
+
+describe('daily challenges', () => {
+  const now = Date.parse('2026-07-25T12:00:00Z');
+  const today = dailyChallengeIds('2026-07-25');
+
+  it('refreshes the baseline and clears completions on a new day', () => {
+    const s = withState({
+      dayStart: { date: '2026-07-24', ore: 5, clicks: 1, criticals: 0 },
+      dailyChallengesDone: ['stale'],
+      stats: { ore: 42, clicks: 7, criticals: 2, prestiges: 0, ascensions: 0 },
+    });
+    const r = refreshDaily(s, now);
+    expect(r.dayStart).toEqual({ date: '2026-07-25', ore: 42, clicks: 7, criticals: 2 });
+    expect(r.dailyChallengesDone).toEqual([]);
+  });
+
+  it('is a no-op on the same day', () => {
+    const s = withState({ dayStart: { date: '2026-07-25', ore: 0, clicks: 0, criticals: 0 } });
+    expect(refreshDaily(s, now)).toBe(s);
+  });
+
+  it('tracks progress as the delta since day start and claims the reward once', () => {
+    const id = today[0];
+    const def = DAILY_CHALLENGES_BY_ID[id];
+    const stats = { ore: 0, clicks: 0, criticals: 0, prestiges: 0, ascensions: 0 };
+    stats[def.metric] = def.target;
+    const s = withState({
+      dayStart: { date: '2026-07-25', ore: 0, clicks: 0, criticals: 0 },
+      stats,
+      prestigePoints: 0,
+    });
+    expect(dailyChallengeProgress(s, id)).toBe(def.target);
+    expect(isDailyChallengeComplete(s, id)).toBe(true);
+    const claimed = claimDailyChallenge(s, id, now);
+    expect(claimed.prestigePoints).toBe(def.reward);
+    expect(claimed.dailyChallengesDone).toContain(id);
+    expect(claimDailyChallenge(claimed, id, now)).toBe(claimed);
+  });
+
+  it('does not claim an incomplete challenge', () => {
+    const id = today[0];
+    const s = withState({ dayStart: { date: '2026-07-25', ore: 0, clicks: 0, criticals: 0 } });
+    expect(claimDailyChallenge(s, id, now)).toBe(s);
   });
 });
 

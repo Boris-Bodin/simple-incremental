@@ -4,6 +4,7 @@ import {
   ASCENSION_GEMS_PER_CRYSTAL,
   AUTOMATIONS_BY_ID,
   COST_GROWTH,
+  DAILY_CHALLENGES_BY_ID,
   CRIT_CHANCE,
   CRIT_MULTIPLIER,
   CRYSTAL_BONUS,
@@ -22,8 +23,8 @@ import {
   UPGRADES,
   UPGRADES_BY_ID,
 } from './config';
-import { dayKey, isNextDay } from './daily';
-import type { EraDef, GameState, TalentEffect } from './types';
+import { dailyChallengeIds, dayKey, isNextDay } from './daily';
+import type { DailyMetric, EraDef, GameState, TalentEffect } from './types';
 
 export function initialState(): GameState {
   return {
@@ -43,6 +44,8 @@ export function initialState(): GameState {
     automationOn: {},
     lastClaimDay: '',
     loginStreak: 0,
+    dayStart: { date: '', ore: 0, clicks: 0, criticals: 0 },
+    dailyChallengesDone: [],
     lastSeen: Date.now(),
   };
 }
@@ -250,6 +253,52 @@ export function claimDaily(state: GameState, now = Date.now()): GameState {
     multiplier,
     expiresAt: now + DAILY_BOOST_DURATION_MS,
   });
+}
+
+const metricValue = (state: GameState, metric: DailyMetric): number => state.stats[metric];
+
+export function refreshDaily(state: GameState, now = Date.now()): GameState {
+  const key = dayKey(now);
+  if (state.dayStart.date === key) return state;
+  return {
+    ...state,
+    dayStart: {
+      date: key,
+      ore: state.stats.ore,
+      clicks: state.stats.clicks,
+      criticals: state.stats.criticals,
+    },
+    dailyChallengesDone: [],
+  };
+}
+
+export function dailyChallengeProgress(state: GameState, id: string): number {
+  const def = DAILY_CHALLENGES_BY_ID[id];
+  if (!def) return 0;
+  return Math.max(0, metricValue(state, def.metric) - state.dayStart[def.metric]);
+}
+
+export function isDailyChallengeComplete(state: GameState, id: string): boolean {
+  const def = DAILY_CHALLENGES_BY_ID[id];
+  return !!def && dailyChallengeProgress(state, id) >= def.target;
+}
+
+export function canClaimDailyChallenge(state: GameState, id: string, now = Date.now()): boolean {
+  return (
+    dailyChallengeIds(dayKey(now)).includes(id) &&
+    !state.dailyChallengesDone.includes(id) &&
+    isDailyChallengeComplete(state, id)
+  );
+}
+
+export function claimDailyChallenge(state: GameState, id: string, now = Date.now()): GameState {
+  if (!canClaimDailyChallenge(state, id, now)) return state;
+  const def = DAILY_CHALLENGES_BY_ID[id];
+  return {
+    ...state,
+    prestigePoints: state.prestigePoints + def.reward,
+    dailyChallengesDone: [...state.dailyChallengesDone, id],
+  };
 }
 
 export function clickPower(state: GameState): number {
@@ -468,6 +517,8 @@ export function doPrestige(state: GameState): GameState {
     automationOn: state.automationOn,
     lastClaimDay: state.lastClaimDay,
     loginStreak: state.loginStreak,
+    dayStart: state.dayStart,
+    dailyChallengesDone: state.dailyChallengesDone,
   };
 }
 
@@ -493,5 +544,7 @@ export function doAscension(state: GameState): GameState {
     achievements: state.achievements,
     lastClaimDay: state.lastClaimDay,
     loginStreak: state.loginStreak,
+    dayStart: state.dayStart,
+    dailyChallengesDone: state.dailyChallengesDone,
   };
 }

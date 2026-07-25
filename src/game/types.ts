@@ -51,7 +51,25 @@ export interface GameState {
   automationOn: Record<string, boolean>;
   lastClaimDay: string;
   loginStreak: number;
+  dayStart: DailyBaseline;
+  dailyChallengesDone: string[];
   lastSeen: number;
+}
+
+export type DailyMetric = 'ore' | 'clicks' | 'criticals';
+
+export interface DailyBaseline {
+  date: string;
+  ore: number;
+  clicks: number;
+  criticals: number;
+}
+
+export interface DailyChallengeDef {
+  id: string;
+  metric: DailyMetric;
+  target: number;
+  reward: number;
 }
 
 export interface AutomationDef {

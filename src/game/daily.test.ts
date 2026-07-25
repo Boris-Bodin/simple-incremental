@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { METEO_POOL } from './config';
-import { dailyMeteo, dayKey, endOfDay, isNextDay } from './daily';
+import { DAILY_CHALLENGES, DAILY_CHALLENGES_PER_DAY, METEO_POOL } from './config';
+import { dailyChallengeIds, dailyMeteo, dayKey, endOfDay, isNextDay } from './daily';
 
 const AT = (iso: string): number => Date.parse(iso);
 
@@ -33,5 +33,19 @@ describe('dailyMeteo', () => {
   it('always resolves to a pool member', () => {
     expect(METEO_POOL).toContain(dailyMeteo('2026-07-25'));
     expect(METEO_POOL).toContain(dailyMeteo('2030-01-01'));
+  });
+});
+
+describe('dailyChallengeIds', () => {
+  it('is deterministic for a given day', () => {
+    expect(dailyChallengeIds('2026-07-25')).toEqual(dailyChallengeIds('2026-07-25'));
+  });
+
+  it('returns the configured count of distinct pool ids', () => {
+    const ids = dailyChallengeIds('2026-07-25');
+    expect(ids).toHaveLength(DAILY_CHALLENGES_PER_DAY);
+    expect(new Set(ids).size).toBe(DAILY_CHALLENGES_PER_DAY);
+    const poolIds = DAILY_CHALLENGES.map((c) => c.id);
+    ids.forEach((id) => expect(poolIds).toContain(id));
   });
 });

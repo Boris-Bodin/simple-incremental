@@ -90,6 +90,13 @@ function normalize(parsed: Partial<GameState>): GameState {
         : {},
     lastClaimDay: typeof parsed.lastClaimDay === 'string' ? parsed.lastClaimDay : '',
     loginStreak: typeof parsed.loginStreak === 'number' ? parsed.loginStreak : 0,
+    dayStart:
+      typeof parsed.dayStart === 'object' && parsed.dayStart !== null
+        ? { ...base.dayStart, ...parsed.dayStart }
+        : base.dayStart,
+    dailyChallengesDone: Array.isArray(parsed.dailyChallengesDone)
+      ? parsed.dailyChallengesDone
+      : [],
   };
 }
 

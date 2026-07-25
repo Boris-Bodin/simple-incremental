@@ -1,4 +1,4 @@
-import { METEO_POOL } from './config';
+import { DAILY_CHALLENGES, DAILY_CHALLENGES_PER_DAY, METEO_POOL } from './config';
 import type { Meteo } from './types';
 
 const DAY_MS = 86_400_000;
@@ -28,4 +28,12 @@ function hash(text: string): number {
 
 export function dailyMeteo(key: string = dayKey()): Meteo {
   return METEO_POOL[hash(key) % METEO_POOL.length];
+}
+
+export function dailyChallengeIds(key: string = dayKey()): string[] {
+  return [...DAILY_CHALLENGES]
+    .map((challenge) => ({ id: challenge.id, weight: hash(key + challenge.id) }))
+    .sort((a, b) => a.weight - b.weight)
+    .slice(0, DAILY_CHALLENGES_PER_DAY)
+    .map((entry) => entry.id);
 }

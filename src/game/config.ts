@@ -1,6 +1,7 @@
 import type {
   AchievementDef,
   AutomationDef,
+  DailyChallengeDef,
   EraDef,
   GameState,
   GeneratorDef,
@@ -8,6 +9,21 @@ import type {
   TalentDef,
   UpgradeDef,
 } from './types';
+
+export const DAILY_CHALLENGES_PER_DAY = 3;
+
+export const DAILY_CHALLENGES: DailyChallengeDef[] = [
+  { id: 'ore-small', metric: 'ore', target: 100_000, reward: 3 },
+  { id: 'ore-big', metric: 'ore', target: 10_000_000, reward: 8 },
+  { id: 'click-100', metric: 'clicks', target: 100, reward: 3 },
+  { id: 'click-500', metric: 'clicks', target: 500, reward: 6 },
+  { id: 'crit-10', metric: 'criticals', target: 10, reward: 4 },
+  { id: 'crit-30', metric: 'criticals', target: 30, reward: 7 },
+];
+
+export const DAILY_CHALLENGES_BY_ID: Record<string, DailyChallengeDef> = Object.fromEntries(
+  DAILY_CHALLENGES.map((c) => [c.id, c]),
+);
 
 export const ERAS: EraDef[] = [
   { name: 'Stone Age', fromIndex: 0 },
