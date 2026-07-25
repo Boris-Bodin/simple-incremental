@@ -16,3 +16,15 @@ export function formatNumber(value: number): string {
 export function formatRate(value: number): string {
   return `${formatNumber(value)}/s`;
 }
+
+export function formatDuration(totalSeconds: number): string {
+  const seconds = Math.floor(totalSeconds);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const rest = seconds % 60;
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+  if (hours === 0 && rest > 0) parts.push(`${rest}s`);
+  return parts.length > 0 ? parts.join(' ') : '0s';
+}

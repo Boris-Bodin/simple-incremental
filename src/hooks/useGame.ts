@@ -8,6 +8,7 @@ import {
   tick,
 } from '../game/engine';
 import { clearSave, loadState, saveState } from '../game/storage';
+import type { LoadResult, OfflineProgress } from '../game/storage';
 import type { GameState } from '../game/types';
 
 const TICK_MS = 100;
@@ -15,6 +16,8 @@ const AUTOSAVE_MS = 5000;
 
 export interface GameApi {
   state: GameState;
+  offline: OfflineProgress | null;
+  dismissOffline: () => void;
   mineOnce: () => void;
   buyGenerator: (generatorId: string) => void;
   buyUpgrade: (upgradeId: string) => void;
@@ -23,7 +26,11 @@ export interface GameApi {
 }
 
 export function useGame(): GameApi {
-  const [state, setState] = useState<GameState>(loadState);
+  const initial = useRef<LoadResult | null>(null);
+  if (initial.current === null) initial.current = loadState();
+
+  const [state, setState] = useState<GameState>(initial.current.state);
+  const [offline, setOffline] = useState<OfflineProgress | null>(initial.current.offline);
   const stateRef = useRef(state);
   stateRef.current = state;
 
@@ -60,13 +67,17 @@ export function useGame(): GameApi {
     [],
   );
   const prestige = useCallback(() => setState(doPrestige), []);
+  const dismissOffline = useCallback(() => setOffline(null), []);
   const reset = useCallback(() => {
     clearSave();
     setState(initialState());
+    setOffline(null);
   }, []);
 
   return {
     state,
+    offline,
+    dismissOffline,
     mineOnce,
     buyGenerator: buyGeneratorAction,
     buyUpgrade: buyUpgradeAction,

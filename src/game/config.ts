@@ -4,6 +4,7 @@ export const COST_GROWTH = 1.15;
 export const PRESTIGE_BONUS_PER_POINT = 0.02;
 export const PRESTIGE_ORE_PER_POINT = 1_000_000;
 export const OFFLINE_CAP_SECONDS = 8 * 3600;
+export const OFFLINE_MIN_SECONDS = 60;
 
 export const GENERATORS: GeneratorDef[] = [
   {
