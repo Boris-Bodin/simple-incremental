@@ -42,6 +42,7 @@ export interface GameState {
   upgrades: string[];
   prestigePoints: number;
   crystals: number;
+  ingots: number;
   stats: LifetimeStats;
   achievements: string[];
   activeBoosts: Boost[];

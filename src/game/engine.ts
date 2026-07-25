@@ -10,6 +10,9 @@ import {
   DAILY_BOOST_DURATION_MS,
   DAILY_STREAK_CAP,
   DAILY_STREAK_STEP,
+  INGOT_BONUS,
+  REFINE_BASE_COST,
+  REFINE_GROWTH,
   GENERATORS,
   GENERATORS_BY_ID,
   PRESTIGE_ORE_PER_POINT,
@@ -30,6 +33,7 @@ export function initialState(): GameState {
     upgrades: [],
     prestigePoints: 0,
     crystals: 0,
+    ingots: 0,
     stats: { ore: 0, clicks: 0, criticals: 0, prestiges: 0, ascensions: 0 },
     achievements: [],
     activeBoosts: [],
@@ -185,6 +189,23 @@ export function crystalMultiplier(state: GameState): number {
   return 1 + state.crystals * CRYSTAL_BONUS;
 }
 
+export function ingotMultiplier(state: GameState): number {
+  return 1 + state.ingots * INGOT_BONUS;
+}
+
+export function ingotCost(state: GameState): number {
+  return Math.ceil(REFINE_BASE_COST * REFINE_GROWTH ** state.ingots);
+}
+
+export function canRefine(state: GameState): boolean {
+  return state.ore >= ingotCost(state);
+}
+
+export function refine(state: GameState): GameState {
+  if (!canRefine(state)) return state;
+  return { ...state, ore: state.ore - ingotCost(state), ingots: state.ingots + 1 };
+}
+
 export function activeBoostMultiplier(state: GameState): number {
   return state.activeBoosts.reduce((acc, boost) => acc * boost.multiplier, 1);
 }
@@ -199,7 +220,8 @@ export function globalMultiplier(state: GameState): number {
     fromUpgrades *
     achievementMultiplier(state) *
     activeBoostMultiplier(state) *
-    crystalMultiplier(state)
+    crystalMultiplier(state) *
+    ingotMultiplier(state)
   );
 }
 

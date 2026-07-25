@@ -21,6 +21,10 @@ export const ACHIEVEMENT_BONUS = 0.01;
 export const ASCENSION_GEMS_PER_CRYSTAL = 50;
 export const CRYSTAL_BONUS = 0.1;
 
+export const REFINE_BASE_COST = 1000;
+export const REFINE_GROWTH = 1.8;
+export const INGOT_BONUS = 0.05;
+
 export const FRENZY_MULTIPLIER = 3;
 export const FRENZY_DURATION_MS = 60_000;
 export const FRENZY_COOLDOWN_MS = 600_000;

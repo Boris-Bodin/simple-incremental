@@ -6,8 +6,12 @@ import {
   activeBoostMultiplier,
   ascensionGain,
   canAscend,
+  canRefine,
   crystalMultiplier,
   doAscension,
+  ingotCost,
+  ingotMultiplier,
+  refine,
   bestAffordableGeneratorId,
   bestBuyGeneratorId,
   buyTalent,
@@ -417,6 +421,35 @@ describe('talents', () => {
     const refunded = respecTalents(invested);
     expect(refunded.talents).toEqual({});
     expect(refunded.prestigePoints).toBe(invested.prestigePoints + spent);
+  });
+});
+
+describe('refining', () => {
+  it('costs the base cost for the first ingot and grows per ingot', () => {
+    expect(ingotCost(withState({ ingots: 0 }))).toBe(1000);
+    expect(ingotCost(withState({ ingots: 1 }))).toBe(Math.ceil(1000 * 1.8));
+  });
+
+  it('refines ore into an ingot', () => {
+    const s = refine(withState({ ore: 1500 }));
+    expect(s.ingots).toBe(1);
+    expect(s.ore).toBe(500);
+  });
+
+  it('cannot refine without enough ore', () => {
+    const before = withState({ ore: 999 });
+    expect(canRefine(before)).toBe(false);
+    expect(refine(before)).toBe(before);
+  });
+
+  it('boosts the global multiplier per ingot', () => {
+    expect(ingotMultiplier(withState({ ingots: 4 }))).toBeCloseTo(1.2);
+    expect(globalMultiplier(withState({ ingots: 4 }))).toBeCloseTo(1.2);
+  });
+
+  it('resets ingots on prestige', () => {
+    const before = withState({ oreThisRun: 4 * PRESTIGE_ORE_PER_POINT, ingots: 5 });
+    expect(doPrestige(before).ingots).toBe(0);
   });
 });
 
