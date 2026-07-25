@@ -4,6 +4,7 @@ import { AutomationPanel } from './components/AutomationPanel';
 import { BoostBar } from './components/BoostBar';
 import { BuyAmountSelector, type BuyAmount } from './components/BuyAmountSelector';
 import { ClickArea } from './components/ClickArea';
+import { DailyChallengesPanel } from './components/DailyChallengesPanel';
 import { DailyPanel } from './components/DailyPanel';
 import { EventBanner } from './components/EventBanner';
 import { GeneratorList } from './components/GeneratorList';
@@ -116,7 +117,16 @@ export function App() {
         </div>
       )}
 
-      {tab === 'stats' && <StatsPanel state={game.state} notation={settings.notation} />}
+      {tab === 'stats' && (
+        <div className="stack">
+          <DailyChallengesPanel
+            state={game.state}
+            notation={settings.notation}
+            onClaim={game.claimChallenge}
+          />
+          <StatsPanel state={game.state} notation={settings.notation} />
+        </div>
+      )}
 
       {tab === 'settings' && (
         <SettingsPanel

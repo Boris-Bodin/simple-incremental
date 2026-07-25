@@ -21,9 +21,11 @@ import {
   buyUpgrade,
   canClaimDaily,
   claimDaily,
+  claimDailyChallenge,
   critChance,
   doAscension,
   doPrestige,
+  refreshDaily,
   grantAchievements,
   initialState,
   mine,
@@ -100,6 +102,7 @@ export interface GameApi {
   meteo: Meteo;
   canClaimDaily: boolean;
   claimDailyReward: () => void;
+  claimChallenge: (id: string) => void;
 }
 
 const randDelay = (min: number, max: number): number => min + Math.random() * (max - min);
@@ -128,7 +131,7 @@ export function useGame(): GameApi {
       const now = performance.now();
       const delta = (now - last) / 1000;
       last = now;
-      setState((prev) => runAutomation(tick(prev, delta)));
+      setState((prev) => refreshDaily(runAutomation(tick(prev, delta))));
     }, TICK_MS);
 
     const save = window.setInterval(() => saveState(stateRef.current), AUTOSAVE_MS);
@@ -265,6 +268,10 @@ export function useGame(): GameApi {
     setState((prev) => claimDaily(prev, Date.now()));
   }, []);
 
+  const claimChallenge = useCallback((id: string) => {
+    setState((prev) => claimDailyChallenge(prev, id, Date.now()));
+  }, []);
+
   const mineOnce = useCallback((): boolean => {
     const critical = Math.random() < critChance(stateRef.current);
     setState(critical ? mineCritical : mine);
@@ -345,5 +352,6 @@ export function useGame(): GameApi {
     meteo: dailyMeteo(),
     canClaimDaily: canClaimDaily(state),
     claimDailyReward,
+    claimChallenge,
   };
 }
