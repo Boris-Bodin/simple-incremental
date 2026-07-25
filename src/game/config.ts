@@ -18,6 +18,9 @@ export const CRIT_CHANCE = 0.1;
 export const CRIT_MULTIPLIER = 7;
 export const ACHIEVEMENT_BONUS = 0.01;
 
+export const ASCENSION_GEMS_PER_CRYSTAL = 50;
+export const CRYSTAL_BONUS = 0.1;
+
 export const FRENZY_MULTIPLIER = 3;
 export const FRENZY_DURATION_MS = 60_000;
 export const FRENZY_COOLDOWN_MS = 600_000;

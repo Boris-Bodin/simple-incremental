@@ -1,10 +1,12 @@
 import {
   ACHIEVEMENT_BONUS,
   ACHIEVEMENTS,
+  ASCENSION_GEMS_PER_CRYSTAL,
   AUTOMATIONS_BY_ID,
   COST_GROWTH,
   CRIT_CHANCE,
   CRIT_MULTIPLIER,
+  CRYSTAL_BONUS,
   DAILY_BOOST_DURATION_MS,
   DAILY_STREAK_CAP,
   DAILY_STREAK_STEP,
@@ -27,7 +29,8 @@ export function initialState(): GameState {
     generators: {},
     upgrades: [],
     prestigePoints: 0,
-    stats: { ore: 0, clicks: 0, criticals: 0, prestiges: 0 },
+    crystals: 0,
+    stats: { ore: 0, clicks: 0, criticals: 0, prestiges: 0, ascensions: 0 },
     achievements: [],
     activeBoosts: [],
     talents: {},
@@ -178,6 +181,10 @@ export function achievementMultiplier(state: GameState): number {
   return 1 + state.achievements.length * ACHIEVEMENT_BONUS;
 }
 
+export function crystalMultiplier(state: GameState): number {
+  return 1 + state.crystals * CRYSTAL_BONUS;
+}
+
 export function activeBoostMultiplier(state: GameState): number {
   return state.activeBoosts.reduce((acc, boost) => acc * boost.multiplier, 1);
 }
@@ -191,7 +198,8 @@ export function globalMultiplier(state: GameState): number {
     talentGlobalMultiplier(state) *
     fromUpgrades *
     achievementMultiplier(state) *
-    activeBoostMultiplier(state)
+    activeBoostMultiplier(state) *
+    crystalMultiplier(state)
   );
 }
 
@@ -416,11 +424,37 @@ export function doPrestige(state: GameState): GameState {
   return {
     ...initialState(),
     prestigePoints: state.prestigePoints + gained,
+    crystals: state.crystals,
     stats: { ...state.stats, prestiges: state.stats.prestiges + 1 },
     achievements: state.achievements,
     talents: state.talents,
     unlockedAutomations: state.unlockedAutomations,
     automationOn: state.automationOn,
+    lastClaimDay: state.lastClaimDay,
+    loginStreak: state.loginStreak,
+  };
+}
+
+export function gemsThisEra(state: GameState): number {
+  return state.prestigePoints + talentPointsSpent(state);
+}
+
+export function ascensionGain(state: GameState): number {
+  return Math.floor(Math.sqrt(gemsThisEra(state) / ASCENSION_GEMS_PER_CRYSTAL));
+}
+
+export function canAscend(state: GameState): boolean {
+  return ascensionGain(state) >= 1;
+}
+
+export function doAscension(state: GameState): GameState {
+  const gained = ascensionGain(state);
+  if (gained < 1) return state;
+  return {
+    ...initialState(),
+    crystals: state.crystals + gained,
+    stats: { ...state.stats, ascensions: state.stats.ascensions + 1 },
+    achievements: state.achievements,
     lastClaimDay: state.lastClaimDay,
     loginStreak: state.loginStreak,
   };

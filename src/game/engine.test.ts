@@ -4,6 +4,10 @@ import {
   achievementMultiplier,
   activateBoost,
   activeBoostMultiplier,
+  ascensionGain,
+  canAscend,
+  crystalMultiplier,
+  doAscension,
   bestAffordableGeneratorId,
   bestBuyGeneratorId,
   buyTalent,
@@ -183,13 +187,13 @@ describe('mineCritical', () => {
 
 describe('achievements', () => {
   it('unlocks achievements whose condition is met', () => {
-    const s = withState({ stats: { ore: 0, clicks: 1, criticals: 0, prestiges: 0 } });
+    const s = withState({ stats: { ore: 0, clicks: 1, criticals: 0, prestiges: 0, ascensions: 0 } });
     expect(newlyUnlockedAchievements(s)).toContain('first-strike');
   });
 
   it('does not re-report already unlocked achievements', () => {
     const s = withState({
-      stats: { ore: 0, clicks: 1, criticals: 0, prestiges: 0 },
+      stats: { ore: 0, clicks: 1, criticals: 0, prestiges: 0, ascensions: 0 },
       achievements: ['first-strike'],
     });
     expect(newlyUnlockedAchievements(s)).not.toContain('first-strike');
@@ -416,6 +420,46 @@ describe('talents', () => {
   });
 });
 
+describe('ascension', () => {
+  it('needs enough gems (held + spent) to earn a crystal', () => {
+    expect(ascensionGain(withState({ prestigePoints: 49 }))).toBe(0);
+    expect(ascensionGain(withState({ prestigePoints: 50 }))).toBe(1);
+    expect(canAscend(withState({ prestigePoints: 50 }))).toBe(true);
+  });
+
+  it('counts gems already spent on talents', () => {
+    const invested = buyTalent(withState({ prestigePoints: 50 }), 'sharp-strikes');
+    expect(ascensionGain(invested)).toBe(1);
+  });
+
+  it('grants crystals and wipes the prestige era while keeping meta', () => {
+    const before = withState({
+      prestigePoints: 200,
+      talents: { 'deep-veins': 3 },
+      generators: { apprentice: 10 },
+      achievements: ['first-strike'],
+      crystals: 1,
+    });
+    const after = doAscension(before);
+    expect(after.crystals).toBe(1 + ascensionGain(before));
+    expect(after.prestigePoints).toBe(0);
+    expect(after.talents).toEqual({});
+    expect(after.generators).toEqual({});
+    expect(after.achievements).toEqual(['first-strike']);
+    expect(after.stats.ascensions).toBe(1);
+  });
+
+  it('is a no-op below the first crystal', () => {
+    const before = withState({ prestigePoints: 10 });
+    expect(doAscension(before)).toBe(before);
+  });
+
+  it('folds crystals into the global multiplier', () => {
+    expect(crystalMultiplier(withState({ crystals: 3 }))).toBeCloseTo(1.3);
+    expect(globalMultiplier(withState({ crystals: 3 }))).toBeCloseTo(1.3);
+  });
+});
+
 describe('automation', () => {
   it('unlocks an automation for gems and turns it on', () => {
     const s = unlockAutomation(withState({ prestigePoints: 10 }), 'auto-click');
@@ -550,7 +594,7 @@ describe('prestige', () => {
   it('preserves lifetime stats and achievements and counts the prestige', () => {
     const before = withState({
       oreThisRun: 4 * PRESTIGE_ORE_PER_POINT,
-      stats: { ore: 9999, clicks: 42, criticals: 3, prestiges: 1 },
+      stats: { ore: 9999, clicks: 42, criticals: 3, prestiges: 1, ascensions: 0 },
       achievements: ['first-strike'],
     });
     const after = doPrestige(before);

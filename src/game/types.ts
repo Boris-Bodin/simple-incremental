@@ -24,6 +24,7 @@ export interface LifetimeStats {
   clicks: number;
   criticals: number;
   prestiges: number;
+  ascensions: number;
 }
 
 export interface Boost {
@@ -40,6 +41,7 @@ export interface GameState {
   generators: Record<string, number>;
   upgrades: string[];
   prestigePoints: number;
+  crystals: number;
   stats: LifetimeStats;
   achievements: string[];
   activeBoosts: Boost[];

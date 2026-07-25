@@ -77,6 +77,7 @@ function normalize(parsed: Partial<GameState>): GameState {
     upgrades: Array.isArray(parsed.upgrades) ? parsed.upgrades : [],
     achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
     stats,
+    crystals: typeof parsed.crystals === 'number' ? parsed.crystals : 0,
     talents,
     activeBoosts: [],
     unlockedAutomations: Array.isArray(parsed.unlockedAutomations)
