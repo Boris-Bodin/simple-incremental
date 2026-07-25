@@ -1,13 +1,19 @@
 import { useState } from 'react';
+import { BoostBar } from './components/BoostBar';
 import { BuyAmountSelector, type BuyAmount } from './components/BuyAmountSelector';
 import { ClickArea } from './components/ClickArea';
+import { DailyPanel } from './components/DailyPanel';
+import { EventBanner } from './components/EventBanner';
 import { GeneratorList } from './components/GeneratorList';
+import { GoldenOre } from './components/GoldenOre';
 import { OfflineNotice } from './components/OfflineNotice';
 import { PrestigePanel } from './components/PrestigePanel';
 import { ResourceHeader } from './components/ResourceHeader';
 import { SettingsPanel } from './components/SettingsPanel';
+import { StatsPanel } from './components/StatsPanel';
 import { TabNav } from './components/TabNav';
 import type { TabId } from './components/TabNav';
+import { ToastHost } from './components/ToastHost';
 import { UpgradeList } from './components/UpgradeList';
 import { playBuy, playPrestige } from './game/audio';
 import { canPrestige } from './game/engine';
@@ -36,9 +42,12 @@ export function App() {
 
   return (
     <div className="game">
+      <ToastHost toasts={game.toasts} onDismiss={game.dismissToast} />
+      {game.goldenOre && <GoldenOre ore={game.goldenOre} onCatch={game.catchGoldenOre} />}
       {game.offline && (
         <OfflineNotice offline={game.offline} onDismiss={game.dismissOffline} />
       )}
+      {game.event && <EventBanner event={game.event} onResolve={game.resolveEvent} />}
       <ResourceHeader state={game.state} notation={settings.notation} juice={effectiveJuice} />
       <TabNav
         active={tab}
@@ -54,6 +63,17 @@ export function App() {
             juice={effectiveJuice}
             sound={settings.sound}
             notation={settings.notation}
+          />
+          <DailyPanel
+            meteo={game.meteo}
+            streak={game.state.loginStreak}
+            canClaim={game.canClaimDaily}
+            onClaim={game.claimDailyReward}
+          />
+          <BoostBar
+            boosts={game.state.activeBoosts.filter((boost) => boost.id !== 'meteo')}
+            frenzyReadyAt={game.frenzyReadyAt}
+            onFrenzy={game.triggerFrenzy}
           />
           <BuyAmountSelector value={buyAmount} onChange={setBuyAmount} />
           <div className="columns">
@@ -71,6 +91,8 @@ export function App() {
       {tab === 'prestige' && (
         <PrestigePanel state={game.state} onPrestige={prestige} />
       )}
+
+      {tab === 'stats' && <StatsPanel state={game.state} notation={settings.notation} />}
 
       {tab === 'settings' && (
         <SettingsPanel

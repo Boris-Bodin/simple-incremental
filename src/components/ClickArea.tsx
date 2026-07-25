@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { CRIT_MULTIPLIER } from '../game/config';
 import { clickPower } from '../game/engine';
 import { playMine } from '../game/audio';
 import { formatNumber, type Notation } from '../game/format';
@@ -8,7 +9,7 @@ import { PickaxeIcon } from './icons';
 
 interface Props {
   state: GameState;
-  onMine: () => void;
+  onMine: () => boolean;
   juice: JuiceLevel;
   sound: boolean;
   notation: Notation;
@@ -31,10 +32,12 @@ interface FloatText {
   life: number;
   ttl: number;
   text: string;
+  critical: boolean;
 }
 
 const CHIP_COLOR = '#c9a26b';
 const TEXT_COLOR = '#ffd98a';
+const CRIT_COLOR = '#ff5d5d';
 
 export function ClickArea({ state, onMine, juice, sound, notation }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -69,7 +72,6 @@ export function ClickArea({ state, onMine, juice, sound, notation }: Props) {
     }
 
     const textList = texts.current;
-    ctx.font = '600 15px system-ui, sans-serif';
     ctx.textAlign = 'center';
     for (let i = textList.length - 1; i >= 0; i--) {
       const t = textList[i];
@@ -80,7 +82,8 @@ export function ClickArea({ state, onMine, juice, sound, notation }: Props) {
         continue;
       }
       ctx.globalAlpha = 1 - t.life / t.ttl;
-      ctx.fillStyle = TEXT_COLOR;
+      ctx.fillStyle = t.critical ? CRIT_COLOR : TEXT_COLOR;
+      ctx.font = t.critical ? '800 20px system-ui, sans-serif' : '600 15px system-ui, sans-serif';
       ctx.fillText(t.text, t.x, t.y);
     }
     ctx.globalAlpha = 1;
@@ -113,14 +116,15 @@ export function ClickArea({ state, onMine, juice, sound, notation }: Props) {
   }, []);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    onMine();
+    const critical = onMine();
+    const gained = clickPower(state) * (critical ? CRIT_MULTIPLIER : 1);
 
     if (sound) {
       const now = performance.now();
       const combo = comboRef.current;
       combo.count = now - combo.last < 350 ? Math.min(combo.count + 1, 12) : 0;
       combo.last = now;
-      playMine(1 + combo.count * 0.03);
+      playMine((critical ? 1.5 : 1) + combo.count * 0.03);
     }
 
     if (juice === 'off') return;
@@ -130,10 +134,11 @@ export function ClickArea({ state, onMine, juice, sound, notation }: Props) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const count = juice === 'max' ? 5 : 2;
+    const base = juice === 'max' ? 5 : 2;
+    const count = critical ? base * 2 : base;
     for (let i = 0; i < count; i++) {
       const angle = Math.PI + (Math.random() - 0.5) * Math.PI;
-      const speed = 2 + Math.random() * 3;
+      const speed = 2 + Math.random() * (critical ? 5 : 3);
       chips.current.push({
         x,
         y,
@@ -141,7 +146,7 @@ export function ClickArea({ state, onMine, juice, sound, notation }: Props) {
         vy: Math.sin(angle) * speed - 2,
         life: 0,
         ttl: 28 + Math.random() * 12,
-        size: 2 + Math.random() * 2,
+        size: 2 + Math.random() * (critical ? 3 : 2),
       });
     }
     texts.current.push({
@@ -149,8 +154,9 @@ export function ClickArea({ state, onMine, juice, sound, notation }: Props) {
       y: y - 6,
       vy: -0.9,
       life: 0,
-      ttl: 42,
-      text: `+${formatNumber(clickPower(state), notation)}`,
+      ttl: critical ? 54 : 42,
+      text: `${critical ? 'CRIT ' : ''}+${formatNumber(gained, notation)}`,
+      critical,
     });
     ensureLoop();
   };

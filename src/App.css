@@ -584,3 +584,347 @@
   height: 20px;
   accent-color: var(--accent);
 }
+
+/* ---------- Stats & achievements ---------- */
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stat-grid {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  font-weight: 600;
+}
+
+.stat-row + .stat-row {
+  border-top: 1px solid var(--border);
+}
+
+.stat-row dt {
+  color: var(--text-dim);
+}
+
+.stat-row dd {
+  margin: 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.achv-count {
+  color: var(--text-dim);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.achv-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.achv {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  opacity: 0.55;
+}
+
+.achv.is-unlocked {
+  opacity: 1;
+  border-color: var(--accent);
+}
+
+.achv-badge {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.achv-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.achv-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.achv-desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* ---------- Toasts ---------- */
+.toast-host {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(320px, calc(100vw - 32px));
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  background: var(--bg-panel);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.5);
+  animation: toast-in 0.25s ease;
+}
+
+.toast-badge {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.toast-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.toast-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+.toast-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ---------- Boost bar ---------- */
+.boost-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.frenzy-button {
+  padding: 9px 16px;
+  border: 2px solid var(--gem);
+  border-radius: var(--radius-md);
+  background: var(--gem-soft);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  transition: background 0.18s ease, transform 0.08s ease;
+}
+
+.frenzy-button:not(:disabled):hover {
+  background: rgba(139, 92, 246, 0.32);
+}
+
+.frenzy-button:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.frenzy-button:disabled {
+  opacity: 0.5;
+}
+
+.boost-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.boost-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--good-soft);
+  border: 2px solid var(--good);
+  color: var(--good);
+  font-weight: 700;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.boost-pill.is-malus {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ---------- Golden ore ---------- */
+.golden-ore {
+  position: fixed;
+  z-index: 15;
+  transform: translate(-50%, -50%);
+  padding: 6px;
+  border: none;
+  background: none;
+  font-size: 2.4rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.9));
+  animation: golden-pulse 1s ease-in-out infinite;
+}
+
+@keyframes golden-pulse {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.18);
+  }
+}
+
+/* ---------- Event banner ---------- */
+.event-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  background: var(--gem-soft);
+  border: 2px solid var(--gem);
+  border-radius: var(--radius-md);
+}
+
+.event-banner.is-danger {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+
+.event-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.event-text {
+  flex: 1;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.event-action {
+  padding: 8px 16px;
+  border: 2px solid var(--gem);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.18s ease;
+}
+
+.event-banner.is-danger .event-action {
+  border-color: var(--danger);
+}
+
+.event-action:hover {
+  background: var(--bg-card-hover);
+}
+
+/* ---------- Daily panel ---------- */
+.daily-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px 16px;
+  background: var(--bg-panel);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.daily-meteo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.daily-meteo-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.daily-meteo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.daily-meteo-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.daily-meteo-desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.daily-claim {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  transition: background 0.18s ease, transform 0.08s ease;
+}
+
+.daily-claim:not(:disabled):hover {
+  background: rgba(255, 183, 3, 0.28);
+}
+
+.daily-claim:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.daily-claim:disabled {
+  opacity: 0.6;
+  border-color: var(--border);
+  background: var(--bg-card);
+}
+
+.daily-streak {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
