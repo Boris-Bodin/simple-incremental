@@ -1,5 +1,6 @@
 import { formatDuration, formatNumber } from '../game/format';
 import type { OfflineProgress } from '../game/storage';
+import { CloseIcon } from './icons';
 
 interface Props {
   offline: OfflineProgress;
@@ -20,7 +21,7 @@ export function OfflineNotice({ offline, onDismiss }: Props) {
         onClick={onDismiss}
         aria-label="Dismiss"
       >
-        ×
+        <CloseIcon />
       </button>
     </div>
   );

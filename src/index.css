@@ -1,18 +1,36 @@
 :root {
-  --bg: #10141c;
-  --bg-panel: #1a2130;
-  --bg-card: #222c3f;
-  --bg-card-hover: #2b374e;
+  --bg: #0c0f17;
+  --bg-panel: #161b28;
+  --bg-card: #1f2636;
+  --bg-card-hover: #2a3346;
   --border: #313d54;
-  --text: #e6ecf5;
-  --text-dim: #93a1b8;
+  --border-strong: #3d4a66;
+  --text: #eef2fb;
+  --text-dim: #9aa7bf;
+
   --accent: #ffb703;
   --accent-strong: #fb8500;
-  --good: #4cc38a;
-  --gem: #7aa2ff;
+  --accent-soft: rgba(255, 183, 3, 0.14);
+
+  --good: #34d399;
+  --good-soft: rgba(52, 211, 153, 0.14);
+
+  --gem: #a78bfa;
+  --gem-strong: #8b5cf6;
+  --gem-soft: rgba(167, 139, 250, 0.16);
+
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.14);
+
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+
+  --ring: 0 0 0 3px rgba(255, 183, 3, 0.45);
 
   color-scheme: dark;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fredoka', 'Nunito', system-ui, sans-serif;
 }
 
 * {
@@ -23,12 +41,16 @@ html,
 body,
 #root {
   margin: 0;
-  height: 100%;
+  min-height: 100%;
 }
 
 body {
-  background: var(--bg);
+  background:
+    radial-gradient(1100px 600px at 50% -10%, rgba(255, 183, 3, 0.08), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(139, 92, 246, 0.08), transparent 55%),
+    var(--bg);
   color: var(--text);
+  line-height: 1.5;
 }
 
 button {
@@ -39,4 +61,20 @@ button {
 
 button:disabled {
   cursor: not-allowed;
+}
+
+:where(button, a, [role='tab'], textarea):focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,63 +1,76 @@
 .game {
   max-width: 900px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 20px 16px 48px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
+/* ---------- Tabs ---------- */
 .tab-nav {
   display: flex;
   gap: 8px;
   padding: 6px;
   background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
 .tab-button {
   position: relative;
   flex: 1;
-  padding: 10px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-dim);
+  font-family: var(--font-display);
   font-weight: 600;
-  font-size: 0.95rem;
-  transition: background 0.1s ease, color 0.1s ease;
+  font-size: 0.98rem;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.tab-icon {
+  font-size: 1.2rem;
 }
 
 .tab-button:hover {
   color: var(--text);
+  background: var(--bg-card);
 }
 
 .tab-button.is-active {
-  background: var(--bg-card);
-  color: var(--text);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .tab-badge {
   position: absolute;
-  top: 8px;
-  right: 12px;
-  width: 8px;
-  height: 8px;
+  top: 6px;
+  right: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--gem);
+  box-shadow: 0 0 0 3px var(--bg-panel);
 }
 
+/* ---------- Resource header ---------- */
 .resource-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 16px 20px;
+  gap: 8px 16px;
+  padding: 18px 22px;
   background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .resource-main {
@@ -67,63 +80,82 @@
 }
 
 .resource-amount {
-  font-size: 2.2rem;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
   font-weight: 700;
   color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
 .resource-label {
   color: var(--text-dim);
+  font-weight: 600;
 }
 
 .resource-stats {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   color: var(--good);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
 .prestige-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--gem);
 }
 
+.stat-icon {
+  font-size: 1.05rem;
+}
+
+/* ---------- Click area ---------- */
 .click-area {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 28px;
+  padding: 30px;
   border: none;
-  border-radius: 16px;
-  background: linear-gradient(160deg, var(--accent), var(--accent-strong));
+  border-radius: var(--radius-lg);
+  background: linear-gradient(155deg, var(--accent), var(--accent-strong));
   color: #1a1206;
+  font-family: var(--font-display);
   font-weight: 700;
   user-select: none;
-  transition: transform 0.05s ease, filter 0.1s ease;
+  box-shadow: 0 12px 30px -12px rgba(251, 133, 0, 0.6);
+  transition: transform 0.08s ease, filter 0.18s ease, box-shadow 0.18s ease;
 }
 
 .click-area:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.06);
+  box-shadow: 0 16px 36px -12px rgba(251, 133, 0, 0.7);
 }
 
 .click-area:active {
   transform: scale(0.98);
+  box-shadow: 0 8px 20px -12px rgba(251, 133, 0, 0.6);
 }
 
 .click-icon {
-  font-size: 2.6rem;
+  font-size: 2.8rem;
 }
 
 .click-label {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
 }
 
 .click-power {
   font-size: 0.95rem;
-  opacity: 0.8;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Columns ---------- */
 .columns {
   display: grid;
   grid-template-columns: 1fr;
@@ -137,21 +169,24 @@
   }
 }
 
+/* ---------- Panels ---------- */
 .panel {
   background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
 }
 
 .panel h2 {
-  margin: 0 0 12px;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
+  margin: 0 0 14px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text);
 }
 
+/* ---------- Cards ---------- */
 .card-list {
   list-style: none;
   margin: 0;
@@ -165,22 +200,27 @@
   width: 100%;
   text-align: left;
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 13px 15px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: background 0.1s ease, border-color 0.1s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.08s ease;
 }
 
 .card:not(:disabled):hover {
   background: var(--bg-card-hover);
   border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.card:not(:disabled):active {
+  transform: translateY(0);
 }
 
 .card:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
 .card-head {
@@ -191,11 +231,14 @@
 }
 
 .card-name {
+  font-family: var(--font-display);
   font-weight: 600;
+  font-size: 1rem;
 }
 
 .card-owned {
   color: var(--text-dim);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -208,7 +251,8 @@
 .card-foot {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -220,46 +264,69 @@
   color: var(--good);
 }
 
+/* ---------- Offline notice ---------- */
 .offline-notice {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  background: rgba(76, 195, 138, 0.12);
-  border: 1px solid var(--good);
-  border-radius: 12px;
+  padding: 13px 16px;
+  background: var(--good-soft);
+  border: 2px solid var(--good);
+  border-radius: var(--radius-md);
 }
 
 .offline-text {
   flex: 1;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
 }
 
 .offline-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   background: none;
   border: none;
+  border-radius: var(--radius-sm);
   color: var(--text-dim);
-  font-size: 1.5rem;
-  line-height: 1;
-  padding: 0 4px;
+  font-size: 1.35rem;
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
 .offline-dismiss:hover {
   color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
 }
 
+/* ---------- Prestige ---------- */
 .prestige-panel {
   border-color: var(--gem);
+  background:
+    linear-gradient(180deg, var(--gem-soft), transparent 120px),
+    var(--bg-panel);
 }
 
 .prestige-desc {
   margin: 0 0 12px;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   color: var(--text-dim);
 }
 
+.gem-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--gem);
+  white-space: nowrap;
+}
+
+.gem-inline-icon {
+  font-size: 1em;
+}
+
 .prestige-progress {
-  height: 8px;
+  height: 10px;
   background: var(--bg-card);
   border-radius: 999px;
   overflow: hidden;
@@ -268,34 +335,43 @@
 
 .prestige-progress-bar {
   height: 100%;
-  background: var(--gem);
-  transition: width 0.2s ease;
+  background: linear-gradient(90deg, var(--gem), var(--gem-strong));
+  border-radius: 999px;
+  transition: width 0.3s ease;
 }
 
 .prestige-next {
-  margin: 0 0 12px;
-  font-size: 0.85rem;
+  margin: 0 0 14px;
+  font-size: 0.88rem;
   color: var(--text-dim);
 }
 
 .prestige-button {
   width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--gem);
-  background: rgba(122, 162, 255, 0.15);
+  padding: 13px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--gem);
+  background: var(--gem-soft);
   color: var(--text);
+  font-family: var(--font-display);
   font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.18s ease, transform 0.08s ease;
 }
 
 .prestige-button:not(:disabled):hover {
-  background: rgba(122, 162, 255, 0.28);
+  background: rgba(139, 92, 246, 0.32);
+}
+
+.prestige-button:not(:disabled):active {
+  transform: scale(0.99);
 }
 
 .prestige-button:disabled {
   opacity: 0.5;
 }
 
+/* ---------- Settings ---------- */
 .settings {
   display: flex;
   flex-direction: column;
@@ -311,36 +387,37 @@
 .settings-textarea {
   width: 100%;
   resize: vertical;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  padding: 11px 13px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text);
   font-family: ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
   font-size: 0.8rem;
   line-height: 1.4;
   word-break: break-all;
+  transition: border-color 0.18s ease;
 }
 
 .settings-textarea:focus {
-  outline: none;
   border-color: var(--accent);
 }
 
 .settings-actions {
   display: flex;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .settings-button {
-  padding: 10px 16px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  padding: 11px 18px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text);
+  font-family: var(--font-display);
   font-weight: 600;
-  transition: background 0.1s ease, border-color 0.1s ease;
+  transition: background 0.18s ease, border-color 0.18s ease;
 }
 
 .settings-button:not(:disabled):hover {
@@ -353,34 +430,35 @@
 }
 
 .settings-danger {
-  border-color: rgba(232, 96, 96, 0.5);
+  border-color: var(--danger);
 }
 
 .settings-button-danger {
-  border-color: rgba(232, 96, 96, 0.6);
-  color: #ff9b9b;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .settings-button-danger:not(:disabled):hover {
-  background: rgba(232, 96, 96, 0.15);
-  border-color: #e86060;
+  background: var(--danger-soft);
+  border-color: var(--danger);
 }
 
 .settings-status {
   margin: 0;
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 11px 15px;
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
+  font-weight: 600;
 }
 
 .settings-status.is-ok {
-  background: rgba(76, 195, 138, 0.12);
-  border: 1px solid var(--good);
+  background: var(--good-soft);
+  border: 2px solid var(--good);
   color: var(--good);
 }
 
 .settings-status.is-error {
-  background: rgba(232, 96, 96, 0.12);
-  border: 1px solid #e86060;
-  color: #ff9b9b;
+  background: var(--danger-soft);
+  border: 2px solid var(--danger);
+  color: var(--danger);
 }

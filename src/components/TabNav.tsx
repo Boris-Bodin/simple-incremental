@@ -1,3 +1,6 @@
+import type { ComponentType, SVGProps } from 'react';
+import { GemIcon, PickaxeIcon, SettingsIcon } from './icons';
+
 export type TabId = 'mining' | 'prestige' | 'settings';
 
 interface Props {
@@ -6,26 +9,27 @@ interface Props {
   badges?: Partial<Record<TabId, boolean>>;
 }
 
-const TABS: { id: TabId; label: string }[] = [
-  { id: 'mining', label: '⛏️ Mining' },
-  { id: 'prestige', label: '💎 Prestige' },
-  { id: 'settings', label: '⚙️ Settings' },
+const TABS: { id: TabId; label: string; Icon: ComponentType<SVGProps<SVGSVGElement>> }[] = [
+  { id: 'mining', label: 'Mining', Icon: PickaxeIcon },
+  { id: 'prestige', label: 'Prestige', Icon: GemIcon },
+  { id: 'settings', label: 'Settings', Icon: SettingsIcon },
 ];
 
 export function TabNav({ active, onChange, badges }: Props) {
   return (
     <nav className="tab-nav" role="tablist">
-      {TABS.map((tab) => (
+      {TABS.map(({ id, label, Icon }) => (
         <button
-          key={tab.id}
+          key={id}
           type="button"
           role="tab"
-          aria-selected={active === tab.id}
-          className={`tab-button${active === tab.id ? ' is-active' : ''}`}
-          onClick={() => onChange(tab.id)}
+          aria-selected={active === id}
+          className={`tab-button${active === id ? ' is-active' : ''}`}
+          onClick={() => onChange(id)}
         >
-          {tab.label}
-          {badges?.[tab.id] && <span className="tab-badge" aria-hidden="true" />}
+          <Icon className="tab-icon" />
+          <span>{label}</span>
+          {badges?.[id] && <span className="tab-badge" aria-hidden="true" />}
         </button>
       ))}
     </nav>

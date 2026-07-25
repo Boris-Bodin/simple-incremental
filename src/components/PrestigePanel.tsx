@@ -2,6 +2,7 @@ import { PRESTIGE_BONUS_PER_POINT, PRESTIGE_ORE_PER_POINT } from '../game/config
 import { canPrestige, prestigeGain } from '../game/engine';
 import { formatNumber } from '../game/format';
 import type { GameState } from '../game/types';
+import { GemIcon } from './icons';
 
 interface Props {
   state: GameState;
@@ -25,8 +26,12 @@ export function PrestigePanel({ state, onPrestige }: Props) {
       <h2>Prestige</h2>
       {state.prestigePoints > 0 && (
         <p className="prestige-desc">
-          You hold <strong>💎 {formatNumber(state.prestigePoints)}</strong> — a{' '}
-          <strong>+{currentBonus}%</strong> production bonus.
+          You hold{' '}
+          <strong className="gem-inline">
+            <GemIcon className="gem-inline-icon" />
+            {formatNumber(state.prestigePoints)}
+          </strong>{' '}
+          — a <strong>+{currentBonus}%</strong> production bonus.
         </p>
       )}
       <p className="prestige-desc">
@@ -42,9 +47,18 @@ export function PrestigePanel({ state, onPrestige }: Props) {
         <div className="prestige-progress-bar" style={{ width: `${progress * 100}%` }} />
       </div>
       <p className="prestige-next">
-        {gain >= 1
-          ? `Reset now to claim 💎 ${formatNumber(gain)}.`
-          : `Next gem at ${formatNumber(nextThreshold)} ore this run.`}
+        {gain >= 1 ? (
+          <>
+            Reset now to claim{' '}
+            <span className="gem-inline">
+              <GemIcon className="gem-inline-icon" />
+              {formatNumber(gain)}
+            </span>
+            .
+          </>
+        ) : (
+          `Next gem at ${formatNumber(nextThreshold)} ore this run.`
+        )}
       </p>
       <button
         type="button"
@@ -52,7 +66,11 @@ export function PrestigePanel({ state, onPrestige }: Props) {
         disabled={!canPrestige(state)}
         onClick={onPrestige}
       >
-        Reset for <strong>💎 {formatNumber(gain)}</strong>
+        Reset for{' '}
+        <strong className="gem-inline">
+          <GemIcon className="gem-inline-icon" />
+          {formatNumber(gain)}
+        </strong>
       </button>
     </section>
   );
