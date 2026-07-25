@@ -10,6 +10,7 @@ import {
   DAILY_BOOST_DURATION_MS,
   DAILY_STREAK_CAP,
   DAILY_STREAK_STEP,
+  ERAS,
   INGOT_BONUS,
   REFINE_BASE_COST,
   REFINE_GROWTH,
@@ -22,7 +23,7 @@ import {
   UPGRADES_BY_ID,
 } from './config';
 import { dayKey, isNextDay } from './daily';
-import type { GameState, TalentEffect } from './types';
+import type { EraDef, GameState, TalentEffect } from './types';
 
 export function initialState(): GameState {
   return {
@@ -281,6 +282,19 @@ export function generatorProduction(state: GameState, generatorId: string): numb
 
 export function productionPerSecond(state: GameState): number {
   return GENERATORS.reduce((acc, def) => acc + generatorProduction(state, def.id), 0);
+}
+
+export function highestOwnedGeneratorIndex(state: GameState): number {
+  let highest = -1;
+  GENERATORS.forEach((def, index) => {
+    if (ownedOf(state, def.id) > 0) highest = index;
+  });
+  return highest;
+}
+
+export function currentEra(state: GameState): EraDef {
+  const index = highestOwnedGeneratorIndex(state);
+  return ERAS.reduce((era, candidate) => (index >= candidate.fromIndex ? candidate : era), ERAS[0]);
 }
 
 export function generatorCost(state: GameState, generatorId: string): number {

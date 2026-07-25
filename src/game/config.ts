@@ -1,12 +1,21 @@
 import type {
   AchievementDef,
   AutomationDef,
+  EraDef,
   GameState,
   GeneratorDef,
   Meteo,
   TalentDef,
   UpgradeDef,
 } from './types';
+
+export const ERAS: EraDef[] = [
+  { name: 'Stone Age', fromIndex: 0 },
+  { name: 'Industrial Age', fromIndex: 2 },
+  { name: 'Atomic Age', fromIndex: 5 },
+  { name: 'Cosmic Age', fromIndex: 8 },
+  { name: 'Dimensional Age', fromIndex: 10 },
+];
 
 export const COST_GROWTH = 1.15;
 export const PRESTIGE_BONUS_PER_POINT = 0.02;
@@ -202,6 +211,41 @@ export const GENERATORS: GeneratorDef[] = [
     baseCost: 200_000_000_000,
     baseProduction: 1_600_000,
   },
+  {
+    id: 'dyson-extractor',
+    name: 'Dyson extractor',
+    description: 'Sips raw energy straight from a star.',
+    baseCost: 3_500_000_000_000,
+    baseProduction: 9_500_000,
+  },
+  {
+    id: 'black-hole-drill',
+    name: 'Black hole drill',
+    description: 'Bends spacetime to crush matter into ore.',
+    baseCost: 60_000_000_000_000,
+    baseProduction: 58_000_000,
+  },
+  {
+    id: 'quantum-replicator',
+    name: 'Quantum replicator',
+    description: 'Copies ore across parallel states.',
+    baseCost: 1_000_000_000_000_000,
+    baseProduction: 350_000_000,
+  },
+  {
+    id: 'galaxy-harvester',
+    name: 'Galaxy harvester',
+    description: 'Reaps whole galaxies for their metal.',
+    baseCost: 18_000_000_000_000_000,
+    baseProduction: 2_100_000_000,
+  },
+  {
+    id: 'reality-miner',
+    name: 'Reality miner',
+    description: 'Mines the fabric of reality itself.',
+    baseCost: 300_000_000_000_000_000,
+    baseProduction: 13_000_000_000,
+  },
 ];
 
 export const UPGRADES: UpgradeDef[] = [
@@ -315,6 +359,41 @@ export const UPGRADES: UpgradeDef[] = [
     name: 'Galactic charter',
     description: 'Doubles global production.',
     cost: 2_000_000_000_000,
+    effect: { kind: 'global', multiplier: 2 },
+  },
+  {
+    id: 'stellar-siphon',
+    name: 'Stellar siphon',
+    description: 'Dyson extractors produce 2× more.',
+    cost: 30_000_000_000_000,
+    effect: { kind: 'generator', generatorId: 'dyson-extractor', multiplier: 2 },
+  },
+  {
+    id: 'event-horizon',
+    name: 'Event horizon',
+    description: 'Black hole drills produce 2× more.',
+    cost: 600_000_000_000_000,
+    effect: { kind: 'generator', generatorId: 'black-hole-drill', multiplier: 2 },
+  },
+  {
+    id: 'many-worlds',
+    name: 'Many-worlds theory',
+    description: 'Doubles global production.',
+    cost: 5_000_000_000_000_000,
+    effect: { kind: 'global', multiplier: 2 },
+  },
+  {
+    id: 'cosmic-charter',
+    name: 'Cosmic charter',
+    description: 'Galaxy harvesters produce 2× more.',
+    cost: 200_000_000_000_000_000,
+    effect: { kind: 'generator', generatorId: 'galaxy-harvester', multiplier: 2 },
+  },
+  {
+    id: 'omega-protocol',
+    name: 'Omega protocol',
+    description: 'Doubles global production.',
+    cost: 5_000_000_000_000_000_000,
     effect: { kind: 'global', multiplier: 2 },
   },
 ];

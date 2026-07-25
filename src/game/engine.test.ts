@@ -8,6 +8,7 @@ import {
   canAscend,
   canRefine,
   crystalMultiplier,
+  currentEra,
   doAscension,
   ingotCost,
   ingotMultiplier,
@@ -421,6 +422,27 @@ describe('talents', () => {
     const refunded = respecTalents(invested);
     expect(refunded.talents).toEqual({});
     expect(refunded.prestigePoints).toBe(invested.prestigePoints + spent);
+  });
+});
+
+describe('currentEra', () => {
+  it('starts in the Stone Age with nothing owned', () => {
+    expect(currentEra(initialState()).name).toBe('Stone Age');
+  });
+
+  it('advances with the highest owned generator', () => {
+    expect(currentEra(withState({ generators: { 'electric-drill': 1 } })).name).toBe(
+      'Industrial Age',
+    );
+    expect(currentEra(withState({ generators: { 'auto-mine': 1 } })).name).toBe('Atomic Age');
+    expect(currentEra(withState({ generators: { 'dyson-extractor': 1 } })).name).toBe(
+      'Dimensional Age',
+    );
+  });
+
+  it('reflects the deepest generator, not the newest bought', () => {
+    const s = withState({ generators: { 'reality-miner': 1, apprentice: 5 } });
+    expect(currentEra(s).name).toBe('Dimensional Age');
   });
 });
 

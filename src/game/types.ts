@@ -83,6 +83,11 @@ export interface Meteo {
   multiplier: number;
 }
 
+export interface EraDef {
+  name: string;
+  fromIndex: number;
+}
+
 export interface AchievementDef {
   id: string;
   name: string;
