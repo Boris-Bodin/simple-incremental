@@ -29,6 +29,7 @@ import {
   mine,
   mineCritical,
   newlyUnlockedAchievements,
+  refine,
   respecTalents,
   runAutomation,
   tick,
@@ -80,6 +81,7 @@ export interface GameApi {
   buyUpgrade: (upgradeId: string) => void;
   prestige: () => void;
   ascend: () => void;
+  refine: () => void;
   buyTalent: (talentId: string) => void;
   respecTalents: () => void;
   unlockAutomation: (id: string) => void;
@@ -281,6 +283,7 @@ export function useGame(): GameApi {
   );
   const prestige = useCallback(() => setState(doPrestige), []);
   const ascend = useCallback(() => setState(doAscension), []);
+  const refineOre = useCallback(() => setState(refine), []);
   const buyTalentAction = useCallback(
     (talentId: string) => setState((prev) => buyTalent(prev, talentId)),
     [],
@@ -323,6 +326,7 @@ export function useGame(): GameApi {
     buyUpgrade: buyUpgradeAction,
     prestige,
     ascend,
+    refine: refineOre,
     buyTalent: buyTalentAction,
     respecTalents: respecTalentsAction,
     unlockAutomation: unlockAutomationAction,

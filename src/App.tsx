@@ -10,6 +10,7 @@ import { GeneratorList } from './components/GeneratorList';
 import { GoldenOre } from './components/GoldenOre';
 import { OfflineNotice } from './components/OfflineNotice';
 import { PrestigePanel } from './components/PrestigePanel';
+import { RefineryPanel } from './components/RefineryPanel';
 import { ResourceHeader } from './components/ResourceHeader';
 import { SettingsPanel } from './components/SettingsPanel';
 import { StatsPanel } from './components/StatsPanel';
@@ -79,6 +80,11 @@ export function App() {
             onFrenzy={game.triggerFrenzy}
           />
           <BuyAmountSelector value={buyAmount} onChange={setBuyAmount} />
+          <RefineryPanel
+            state={game.state}
+            notation={settings.notation}
+            onRefine={game.refine}
+          />
           <div className="columns">
             <GeneratorList
               state={game.state}
