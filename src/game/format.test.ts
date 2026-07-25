@@ -24,11 +24,25 @@ describe('formatNumber', () => {
   it('renders infinity', () => {
     expect(formatNumber(Infinity)).toBe('∞');
   });
+
+  it('uses scientific notation when asked', () => {
+    expect(formatNumber(1500, 'scientific')).toBe('1.50e+3');
+    expect(formatNumber(2_000_000_000, 'scientific')).toBe('2.00e+9');
+  });
+
+  it('keeps small numbers plain even in scientific mode', () => {
+    expect(formatNumber(42, 'scientific')).toBe('42');
+    expect(formatNumber(0.5, 'scientific')).toBe('0.5');
+  });
 });
 
 describe('formatRate', () => {
   it('appends /s', () => {
     expect(formatRate(1000)).toBe('1.00K/s');
+  });
+
+  it('honours the notation argument', () => {
+    expect(formatRate(1500, 'scientific')).toBe('1.50e+3/s');
   });
 });
 

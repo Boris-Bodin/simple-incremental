@@ -1,9 +1,14 @@
 const SUFFIXES = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
 
-export function formatNumber(value: number): string {
+export type Notation = 'short' | 'scientific';
+
+export function formatNumber(value: number, notation: Notation = 'short'): string {
   if (!Number.isFinite(value)) return '∞';
   if (value < 1000) {
     return Number.isInteger(value) ? value.toString() : value.toFixed(1);
+  }
+  if (notation === 'scientific') {
+    return value.toExponential(2);
   }
   const tier = Math.floor(Math.log10(value) / 3);
   if (tier < SUFFIXES.length) {
@@ -13,8 +18,8 @@ export function formatNumber(value: number): string {
   return value.toExponential(2);
 }
 
-export function formatRate(value: number): string {
-  return `${formatNumber(value)}/s`;
+export function formatRate(value: number, notation: Notation = 'short'): string {
+  return `${formatNumber(value, notation)}/s`;
 }
 
 export function formatDuration(totalSeconds: number): string {

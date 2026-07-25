@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { PRESTIGE_ORE_PER_POINT } from './config';
 import {
+  bestBuyGeneratorId,
   buyGenerator,
+  buyGeneratorBulk,
   buyUpgrade,
+  bulkCost,
   canAffordGenerator,
   canAffordUpgrade,
   canPrestige,
@@ -13,9 +16,11 @@ import {
   globalMultiplier,
   hasUpgrade,
   initialState,
+  maxAffordable,
   mine,
   ownedOf,
   prestigeGain,
+  productionAddedBy,
   productionPerSecond,
   tick,
 } from './engine';
@@ -172,6 +177,95 @@ describe('buyUpgrade', () => {
   it('is a no-op when unaffordable', () => {
     const before = withState({ ore: 1 });
     expect(buyUpgrade(before, 'iron-pickaxe')).toBe(before);
+  });
+});
+
+describe('bulkCost', () => {
+  it('equals the single cost for one unit', () => {
+    const s = withState({ ore: 1000 });
+    expect(bulkCost(s, 'apprentice', 1)).toBe(generatorCost(s, 'apprentice'));
+  });
+
+  it('sums successive unit costs like buying one at a time', () => {
+    const s = withState({ ore: 1_000_000 });
+    let simulated = s;
+    let expected = 0;
+    for (let i = 0; i < 3; i++) {
+      expected += generatorCost(simulated, 'apprentice');
+      simulated = buyGenerator({ ...simulated, ore: Infinity }, 'apprentice');
+    }
+    expect(bulkCost(s, 'apprentice', 3)).toBe(expected);
+  });
+
+  it('is 0 for a non-positive count', () => {
+    expect(bulkCost(withState({}), 'apprentice', 0)).toBe(0);
+  });
+});
+
+describe('maxAffordable', () => {
+  it('returns how many units the ore can buy', () => {
+    const s = withState({ ore: 15 });
+    expect(maxAffordable(s, 'apprentice')).toBe(1);
+  });
+
+  it('accounts for the rising cost curve', () => {
+    const three = bulkCost(withState({}), 'apprentice', 3);
+    const four = bulkCost(withState({}), 'apprentice', 4);
+    expect(maxAffordable(withState({ ore: three }), 'apprentice')).toBe(3);
+    expect(maxAffordable(withState({ ore: four - 1 }), 'apprentice')).toBe(3);
+  });
+
+  it('is 0 when nothing is affordable', () => {
+    expect(maxAffordable(withState({ ore: 14 }), 'apprentice')).toBe(0);
+  });
+});
+
+describe('buyGeneratorBulk', () => {
+  it('buys the requested count and deducts the bulk cost', () => {
+    const s = withState({ ore: 1_000_000 });
+    const cost = bulkCost(s, 'apprentice', 10);
+    const after = buyGeneratorBulk(s, 'apprentice', 10);
+    expect(ownedOf(after, 'apprentice')).toBe(10);
+    expect(after.ore).toBe(1_000_000 - cost);
+  });
+
+  it('caps the purchase at what is affordable', () => {
+    const s = withState({ ore: 15 });
+    const after = buyGeneratorBulk(s, 'apprentice', 10);
+    expect(ownedOf(after, 'apprentice')).toBe(1);
+    expect(after.ore).toBe(0);
+  });
+
+  it('is a no-op when nothing is affordable', () => {
+    const before = withState({ ore: 14 });
+    expect(buyGeneratorBulk(before, 'apprentice', 10)).toBe(before);
+  });
+
+  it('does not mutate the input state', () => {
+    const before = withState({ ore: 1000 });
+    buyGeneratorBulk(before, 'apprentice', 10);
+    expect(before.ore).toBe(1000);
+    expect(ownedOf(before, 'apprentice')).toBe(0);
+  });
+});
+
+describe('productionAddedBy', () => {
+  it('is the marginal production of one more unit', () => {
+    const s = withState({ generators: { 'electric-drill': 5 }, upgrades: ['sharp-drills'] });
+    const before = generatorProduction(s, 'electric-drill');
+    const after = generatorProduction(buyGenerator({ ...s, ore: Infinity }, 'electric-drill'), 'electric-drill');
+    expect(productionAddedBy(s, 'electric-drill')).toBeCloseTo(after - before);
+  });
+});
+
+describe('bestBuyGeneratorId', () => {
+  it('picks the generator with the best production-per-ore ratio', () => {
+    const s = withState({ ore: 1000 });
+    const best = bestBuyGeneratorId(s);
+    const ratio = (id: string) => productionAddedBy(s, id) / generatorCost(s, id);
+    expect(best).not.toBeNull();
+    expect(ratio(best as string)).toBeGreaterThanOrEqual(ratio('apprentice'));
+    expect(ratio(best as string)).toBeGreaterThanOrEqual(ratio('planetary-cruncher'));
   });
 });
 

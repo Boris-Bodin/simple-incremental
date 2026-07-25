@@ -79,6 +79,50 @@ export function canAffordGenerator(state: GameState, generatorId: string): boole
   return state.ore >= generatorCost(state, generatorId);
 }
 
+export function bulkCost(state: GameState, generatorId: string, count: number): number {
+  const def = GENERATORS_BY_ID[generatorId];
+  if (!def || count <= 0) return def ? 0 : Infinity;
+  const owned = ownedOf(state, generatorId);
+  let total = 0;
+  for (let i = 0; i < count; i++) {
+    total += Math.ceil(def.baseCost * COST_GROWTH ** (owned + i));
+  }
+  return total;
+}
+
+export function maxAffordable(state: GameState, generatorId: string): number {
+  const def = GENERATORS_BY_ID[generatorId];
+  if (!def) return 0;
+  const owned = ownedOf(state, generatorId);
+  let count = 0;
+  let spent = 0;
+  for (;;) {
+    const next = spent + Math.ceil(def.baseCost * COST_GROWTH ** (owned + count));
+    if (next > state.ore) return count;
+    spent = next;
+    count += 1;
+  }
+}
+
+export function productionAddedBy(state: GameState, generatorId: string): number {
+  const def = GENERATORS_BY_ID[generatorId];
+  if (!def) return 0;
+  return def.baseProduction * generatorMultiplier(state, generatorId) * globalMultiplier(state);
+}
+
+export function bestBuyGeneratorId(state: GameState): string | null {
+  let bestId: string | null = null;
+  let bestRatio = -Infinity;
+  for (const def of GENERATORS) {
+    const ratio = productionAddedBy(state, def.id) / generatorCost(state, def.id);
+    if (ratio > bestRatio) {
+      bestRatio = ratio;
+      bestId = def.id;
+    }
+  }
+  return bestId;
+}
+
 export function canAffordUpgrade(state: GameState, upgradeId: string): boolean {
   const def = UPGRADES_BY_ID[upgradeId];
   return !!def && !hasUpgrade(state, upgradeId) && state.ore >= def.cost;
@@ -102,6 +146,25 @@ export function buyGenerator(state: GameState, generatorId: string): GameState {
     generators: {
       ...state.generators,
       [generatorId]: ownedOf(state, generatorId) + 1,
+    },
+  };
+}
+
+export function buyGeneratorBulk(
+  state: GameState,
+  generatorId: string,
+  count: number,
+): GameState {
+  const affordable = maxAffordable(state, generatorId);
+  const toBuy = Math.min(count, affordable);
+  if (toBuy <= 0) return state;
+  const cost = bulkCost(state, generatorId, toBuy);
+  return {
+    ...state,
+    ore: state.ore - cost,
+    generators: {
+      ...state.generators,
+      [generatorId]: ownedOf(state, generatorId) + toBuy,
     },
   };
 }
