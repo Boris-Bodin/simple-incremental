@@ -1,0 +1,232 @@
+.game {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resource-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.resource-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.resource-amount {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.resource-label {
+  color: var(--text-dim);
+}
+
+.resource-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--good);
+  font-variant-numeric: tabular-nums;
+}
+
+.prestige-badge {
+  color: var(--gem);
+}
+
+.click-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 28px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(160deg, var(--accent), var(--accent-strong));
+  color: #1a1206;
+  font-weight: 700;
+  user-select: none;
+  transition: transform 0.05s ease, filter 0.1s ease;
+}
+
+.click-area:hover {
+  filter: brightness(1.05);
+}
+
+.click-area:active {
+  transform: scale(0.98);
+}
+
+.click-icon {
+  font-size: 2.6rem;
+}
+
+.click-label {
+  font-size: 1.2rem;
+}
+
+.click-power {
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 720px) {
+  .columns {
+    grid-template-columns: 1.4fr 1fr;
+    align-items: start;
+  }
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.panel h2 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  width: 100%;
+  text-align: left;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background 0.1s ease, border-color 0.1s ease;
+}
+
+.card:not(:disabled):hover {
+  background: var(--bg-card-hover);
+  border-color: var(--accent);
+}
+
+.card:disabled {
+  opacity: 0.55;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-name {
+  font-weight: 600;
+}
+
+.card-owned {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.card-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.card-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-cost {
+  color: var(--accent);
+}
+
+.card-rate {
+  color: var(--good);
+}
+
+.prestige-panel {
+  border-color: var(--gem);
+}
+
+.prestige-desc {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.prestige-button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--gem);
+  background: rgba(122, 162, 255, 0.15);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.prestige-button:not(:disabled):hover {
+  background: rgba(122, 162, 255, 0.28);
+}
+
+.prestige-button:disabled {
+  opacity: 0.5;
+}
+
+.game-footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  color: var(--text);
+}
