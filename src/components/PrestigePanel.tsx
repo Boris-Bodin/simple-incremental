@@ -1,4 +1,4 @@
-import { PRESTIGE_BONUS_PER_POINT, PRESTIGE_ORE_PER_POINT } from '../game/config';
+import { PRESTIGE_ORE_PER_POINT } from '../game/config';
 import { canPrestige, prestigeGain } from '../game/engine';
 import { formatNumber } from '../game/format';
 import type { GameState } from '../game/types';
@@ -11,8 +11,6 @@ interface Props {
 
 export function PrestigePanel({ state, onPrestige }: Props) {
   const gain = prestigeGain(state);
-  const bonusPercent = Math.round(PRESTIGE_BONUS_PER_POINT * 100);
-  const currentBonus = Math.round(state.prestigePoints * PRESTIGE_BONUS_PER_POINT * 100);
 
   const prevThreshold = gain ** 2 * PRESTIGE_ORE_PER_POINT;
   const nextThreshold = (gain + 1) ** 2 * PRESTIGE_ORE_PER_POINT;
@@ -31,11 +29,11 @@ export function PrestigePanel({ state, onPrestige }: Props) {
             <GemIcon className="gem-inline-icon" />
             {formatNumber(state.prestigePoints)}
           </strong>{' '}
-          — a <strong>+{currentBonus}%</strong> production bonus.
+          to spend on talents.
         </p>
       )}
       <p className="prestige-desc">
-        Each gem grants <strong>+{bonusPercent}%</strong> permanent production.
+        Resetting trades this run for gems — spend them in the talent tree below for permanent power.
       </p>
       <div
         className="prestige-progress"

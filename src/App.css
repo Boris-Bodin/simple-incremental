@@ -928,3 +928,36 @@
   color: var(--text-dim);
   font-variant-numeric: tabular-nums;
 }
+
+/* ---------- Talents ---------- */
+.talent-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.talent-head h2 {
+  margin: 0;
+}
+
+.respec-button {
+  padding: 7px 14px;
+  border: 2px solid var(--gem);
+  border-radius: var(--radius-sm);
+  background: var(--gem-soft);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: background 0.18s ease;
+}
+
+.respec-button:not(:disabled):hover {
+  background: rgba(139, 92, 246, 0.32);
+}
+
+.respec-button:disabled {
+  opacity: 0.5;
+}

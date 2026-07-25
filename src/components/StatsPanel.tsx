@@ -1,4 +1,5 @@
-import { ACHIEVEMENTS, ACHIEVEMENT_BONUS, CRIT_CHANCE, CRIT_MULTIPLIER } from '../game/config';
+import { ACHIEVEMENTS, ACHIEVEMENT_BONUS, CRIT_MULTIPLIER } from '../game/config';
+import { critChance } from '../game/engine';
 import { formatNumber, type Notation } from '../game/format';
 import type { GameState } from '../game/types';
 
@@ -15,7 +16,7 @@ export function StatsPanel({ state, notation }: Props) {
     { label: 'Critical hits', value: formatNumber(state.stats.criticals, notation) },
     { label: 'Prestiges', value: formatNumber(state.stats.prestiges, notation) },
     { label: 'Login streak', value: `${state.loginStreak} day${state.loginStreak === 1 ? '' : 's'}` },
-    { label: 'Critical chance', value: `${Math.round(CRIT_CHANCE * 100)}%` },
+    { label: 'Critical chance', value: `${Math.round(critChance(state) * 100)}%` },
     { label: 'Critical power', value: `×${CRIT_MULTIPLIER}` },
     {
       label: 'Achievement bonus',

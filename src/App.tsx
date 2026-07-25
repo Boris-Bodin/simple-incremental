@@ -11,6 +11,7 @@ import { PrestigePanel } from './components/PrestigePanel';
 import { ResourceHeader } from './components/ResourceHeader';
 import { SettingsPanel } from './components/SettingsPanel';
 import { StatsPanel } from './components/StatsPanel';
+import { TalentTree } from './components/TalentTree';
 import { TabNav } from './components/TabNav';
 import type { TabId } from './components/TabNav';
 import { ToastHost } from './components/ToastHost';
@@ -89,7 +90,14 @@ export function App() {
       )}
 
       {tab === 'prestige' && (
-        <PrestigePanel state={game.state} onPrestige={prestige} />
+        <div className="columns">
+          <PrestigePanel state={game.state} onPrestige={prestige} />
+          <TalentTree
+            state={game.state}
+            onBuy={game.buyTalent}
+            onRespec={game.respecTalents}
+          />
+        </div>
       )}
 
       {tab === 'stats' && <StatsPanel state={game.state} notation={settings.notation} />}

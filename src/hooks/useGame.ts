@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CAVEIN_DURATION_MS,
   CAVEIN_MALUS,
-  CRIT_CHANCE,
   EVENT_MAX_INTERVAL_MS,
   EVENT_MIN_INTERVAL_MS,
   EVENT_PROMPT_MS,
@@ -18,15 +17,18 @@ import {
   activateBoost,
   buyGenerator,
   buyGeneratorBulk,
+  buyTalent,
   buyUpgrade,
   canClaimDaily,
   claimDaily,
+  critChance,
   doPrestige,
   grantAchievements,
   initialState,
   mine,
   mineCritical,
   newlyUnlockedAchievements,
+  respecTalents,
   tick,
 } from '../game/engine';
 import { dailyMeteo, endOfDay } from '../game/daily';
@@ -73,6 +75,8 @@ export interface GameApi {
   buyGenerator: (generatorId: string, count: number) => void;
   buyUpgrade: (upgradeId: string) => void;
   prestige: () => void;
+  buyTalent: (talentId: string) => void;
+  respecTalents: () => void;
   reset: () => void;
   exportSave: () => string;
   importSave: (raw: string) => boolean;
@@ -253,7 +257,7 @@ export function useGame(): GameApi {
   }, []);
 
   const mineOnce = useCallback((): boolean => {
-    const critical = Math.random() < CRIT_CHANCE;
+    const critical = Math.random() < critChance(stateRef.current);
     setState(critical ? mineCritical : mine);
     return critical;
   }, []);
@@ -269,6 +273,11 @@ export function useGame(): GameApi {
     [],
   );
   const prestige = useCallback(() => setState(doPrestige), []);
+  const buyTalentAction = useCallback(
+    (talentId: string) => setState((prev) => buyTalent(prev, talentId)),
+    [],
+  );
+  const respecTalentsAction = useCallback(() => setState(respecTalents), []);
   const dismissOffline = useCallback(() => setOffline(null), []);
   const reset = useCallback(() => {
     clearSave();
@@ -297,6 +306,8 @@ export function useGame(): GameApi {
     buyGenerator: buyGeneratorAction,
     buyUpgrade: buyUpgradeAction,
     prestige,
+    buyTalent: buyTalentAction,
+    respecTalents: respecTalentsAction,
     reset,
     exportSave,
     importSave,
