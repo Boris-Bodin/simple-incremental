@@ -44,6 +44,9 @@ export function ResourceHeader({ state, notation, juice }: Props) {
             {formatNumber(state.prestigePoints, notation)}
           </span>
         )}
+        {state.crystals > 0 && (
+          <span className="crystal-badge">💠 {formatNumber(state.crystals, notation)}</span>
+        )}
       </div>
     </header>
   );

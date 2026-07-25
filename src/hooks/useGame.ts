@@ -22,6 +22,7 @@ import {
   canClaimDaily,
   claimDaily,
   critChance,
+  doAscension,
   doPrestige,
   grantAchievements,
   initialState,
@@ -78,6 +79,7 @@ export interface GameApi {
   buyGenerator: (generatorId: string, count: number) => void;
   buyUpgrade: (upgradeId: string) => void;
   prestige: () => void;
+  ascend: () => void;
   buyTalent: (talentId: string) => void;
   respecTalents: () => void;
   unlockAutomation: (id: string) => void;
@@ -278,6 +280,7 @@ export function useGame(): GameApi {
     [],
   );
   const prestige = useCallback(() => setState(doPrestige), []);
+  const ascend = useCallback(() => setState(doAscension), []);
   const buyTalentAction = useCallback(
     (talentId: string) => setState((prev) => buyTalent(prev, talentId)),
     [],
@@ -319,6 +322,7 @@ export function useGame(): GameApi {
     buyGenerator: buyGeneratorAction,
     buyUpgrade: buyUpgradeAction,
     prestige,
+    ascend,
     buyTalent: buyTalentAction,
     respecTalents: respecTalentsAction,
     unlockAutomation: unlockAutomationAction,

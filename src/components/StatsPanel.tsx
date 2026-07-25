@@ -15,6 +15,7 @@ export function StatsPanel({ state, notation }: Props) {
     { label: 'Manual clicks', value: formatNumber(state.stats.clicks, notation) },
     { label: 'Critical hits', value: formatNumber(state.stats.criticals, notation) },
     { label: 'Prestiges', value: formatNumber(state.stats.prestiges, notation) },
+    { label: 'Ascensions', value: formatNumber(state.stats.ascensions, notation) },
     { label: 'Login streak', value: `${state.loginStreak} day${state.loginStreak === 1 ? '' : 's'}` },
     { label: 'Critical chance', value: `${Math.round(critChance(state) * 100)}%` },
     { label: 'Critical power', value: `×${CRIT_MULTIPLIER}` },

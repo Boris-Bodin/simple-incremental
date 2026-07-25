@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AscensionPanel } from './components/AscensionPanel';
 import { AutomationPanel } from './components/AutomationPanel';
 import { BoostBar } from './components/BoostBar';
 import { BuyAmountSelector, type BuyAmount } from './components/BuyAmountSelector';
@@ -94,6 +95,7 @@ export function App() {
         <div className="columns">
           <div className="stack">
             <PrestigePanel state={game.state} onPrestige={prestige} />
+            <AscensionPanel state={game.state} onAscend={game.ascend} />
             <AutomationPanel
               state={game.state}
               onUnlock={game.unlockAutomation}

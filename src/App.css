@@ -109,6 +109,14 @@
   color: var(--gem);
 }
 
+.crystal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
 .stat-icon {
   font-size: 1.05rem;
 }
@@ -959,6 +967,38 @@
 }
 
 .respec-button:disabled {
+  opacity: 0.5;
+}
+
+/* ---------- Ascension ---------- */
+.ascension-panel {
+  border-color: var(--accent);
+  background:
+    linear-gradient(180deg, var(--accent-soft), transparent 120px),
+    var(--bg-panel);
+}
+
+.ascension-button {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  transition: background 0.18s ease, transform 0.08s ease;
+}
+
+.ascension-button:not(:disabled):hover {
+  background: rgba(255, 183, 3, 0.28);
+}
+
+.ascension-button:not(:disabled):active {
+  transform: scale(0.99);
+}
+
+.ascension-button:disabled {
   opacity: 0.5;
 }
 
