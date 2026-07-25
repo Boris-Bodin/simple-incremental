@@ -4,6 +4,7 @@ import { GeneratorList } from './components/GeneratorList';
 import { OfflineNotice } from './components/OfflineNotice';
 import { PrestigePanel } from './components/PrestigePanel';
 import { ResourceHeader } from './components/ResourceHeader';
+import { SettingsPanel } from './components/SettingsPanel';
 import { TabNav } from './components/TabNav';
 import type { TabId } from './components/TabNav';
 import { UpgradeList } from './components/UpgradeList';
@@ -14,12 +15,6 @@ import './App.css';
 export function App() {
   const game = useGame();
   const [tab, setTab] = useState<TabId>('mining');
-
-  const handleReset = () => {
-    if (window.confirm('Erase your save and start over?')) {
-      game.reset();
-    }
-  };
 
   return (
     <div className="game">
@@ -33,7 +28,7 @@ export function App() {
         badges={{ prestige: canPrestige(game.state) }}
       />
 
-      {tab === 'mining' ? (
+      {tab === 'mining' && (
         <>
           <ClickArea state={game.state} onMine={game.mineOnce} />
           <div className="columns">
@@ -41,15 +36,19 @@ export function App() {
             <UpgradeList state={game.state} onBuy={game.buyUpgrade} />
           </div>
         </>
-      ) : (
+      )}
+
+      {tab === 'prestige' && (
         <PrestigePanel state={game.state} onPrestige={game.prestige} />
       )}
 
-      <footer className="game-footer">
-        <button type="button" className="link-button" onClick={handleReset}>
-          Reset
-        </button>
-      </footer>
+      {tab === 'settings' && (
+        <SettingsPanel
+          exportSave={game.exportSave}
+          importSave={game.importSave}
+          onReset={game.reset}
+        />
+      )}
     </div>
   );
 }

@@ -42,6 +42,37 @@ export function clearSave(): void {
   }
 }
 
+export function exportSave(state: GameState): string {
+  return btoa(encodeURIComponent(JSON.stringify(state)));
+}
+
+export function importSave(raw: string): GameState | null {
+  try {
+    const json = decodeURIComponent(atob(raw.trim()));
+    const parsed = JSON.parse(json) as unknown;
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      return null;
+    }
+    return sanitize(parsed as Partial<GameState>);
+  } catch {
+    return null;
+  }
+}
+
+function sanitize(parsed: Partial<GameState>): GameState {
+  const generators =
+    typeof parsed.generators === 'object' && parsed.generators !== null
+      ? parsed.generators
+      : {};
+  return {
+    ...initialState(),
+    ...parsed,
+    generators,
+    upgrades: Array.isArray(parsed.upgrades) ? parsed.upgrades : [],
+    lastSeen: Date.now(),
+  };
+}
+
 function applyOfflineProgress(state: GameState): LoadResult {
   const elapsedSeconds = (Date.now() - state.lastSeen) / 1000;
   if (!Number.isFinite(elapsedSeconds) || elapsedSeconds <= 0) {

@@ -1,4 +1,4 @@
-export type TabId = 'mining' | 'prestige';
+export type TabId = 'mining' | 'prestige' | 'settings';
 
 interface Props {
   active: TabId;
@@ -9,6 +9,7 @@ interface Props {
 const TABS: { id: TabId; label: string }[] = [
   { id: 'mining', label: '⛏️ Mining' },
   { id: 'prestige', label: '💎 Prestige' },
+  { id: 'settings', label: '⚙️ Settings' },
 ];
 
 export function TabNav({ active, onChange, badges }: Props) {

@@ -7,7 +7,13 @@ import {
   mine,
   tick,
 } from '../game/engine';
-import { clearSave, loadState, saveState } from '../game/storage';
+import {
+  clearSave,
+  exportSave as serializeSave,
+  importSave as parseSave,
+  loadState,
+  saveState,
+} from '../game/storage';
 import type { LoadResult, OfflineProgress } from '../game/storage';
 import type { GameState } from '../game/types';
 
@@ -23,6 +29,8 @@ export interface GameApi {
   buyUpgrade: (upgradeId: string) => void;
   prestige: () => void;
   reset: () => void;
+  exportSave: () => string;
+  importSave: (raw: string) => boolean;
 }
 
 export function useGame(): GameApi {
@@ -74,6 +82,16 @@ export function useGame(): GameApi {
     setOffline(null);
   }, []);
 
+  const exportSave = useCallback(() => serializeSave(stateRef.current), []);
+  const importSave = useCallback((raw: string): boolean => {
+    const parsed = parseSave(raw);
+    if (!parsed) return false;
+    setState(parsed);
+    setOffline(null);
+    saveState(parsed);
+    return true;
+  }, []);
+
   return {
     state,
     offline,
@@ -83,5 +101,7 @@ export function useGame(): GameApi {
     buyUpgrade: buyUpgradeAction,
     prestige,
     reset,
+    exportSave,
+    importSave,
   };
 }
