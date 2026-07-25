@@ -33,6 +33,57 @@
   --font-display: 'Fredoka', 'Nunito', system-ui, sans-serif;
 }
 
+:root[data-theme='light'],
+:root:not([data-theme]) {
+  /* dark stays the default declared above; light is opt-in below */
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bg: #f4f6fb;
+    --bg-panel: #ffffff;
+    --bg-card: #eef1f7;
+    --bg-card-hover: #e4e9f2;
+    --border: #d3dae8;
+    --border-strong: #c0c9db;
+    --text: #1a2230;
+    --text-dim: #5a6780;
+    --accent: #d97706;
+    --accent-strong: #ea580c;
+    --accent-soft: rgba(217, 119, 6, 0.14);
+    --good: #059669;
+    --good-soft: rgba(5, 150, 105, 0.14);
+    --gem: #7c3aed;
+    --gem-strong: #6d28d9;
+    --gem-soft: rgba(124, 58, 237, 0.14);
+    --danger: #dc2626;
+    --danger-soft: rgba(220, 38, 38, 0.12);
+    color-scheme: light;
+  }
+}
+
+:root[data-theme='light'] {
+  --bg: #f4f6fb;
+  --bg-panel: #ffffff;
+  --bg-card: #eef1f7;
+  --bg-card-hover: #e4e9f2;
+  --border: #d3dae8;
+  --border-strong: #c0c9db;
+  --text: #1a2230;
+  --text-dim: #5a6780;
+  --accent: #d97706;
+  --accent-strong: #ea580c;
+  --accent-soft: rgba(217, 119, 6, 0.14);
+  --good: #059669;
+  --good-soft: rgba(5, 150, 105, 0.14);
+  --gem: #7c3aed;
+  --gem-strong: #6d28d9;
+  --gem-soft: rgba(124, 58, 237, 0.14);
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.12);
+  color-scheme: light;
+}
+
 * {
   box-sizing: border-box;
 }

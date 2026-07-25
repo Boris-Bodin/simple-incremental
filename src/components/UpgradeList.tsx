@@ -1,16 +1,17 @@
 import { UPGRADES } from '../game/config';
 import { canAffordUpgrade, hasUpgrade } from '../game/engine';
-import { formatNumber } from '../game/format';
+import { formatNumber, type Notation } from '../game/format';
 import type { GameState } from '../game/types';
 
 const REVEAL_RATIO = 0.4;
 
 interface Props {
   state: GameState;
+  notation: Notation;
   onBuy: (upgradeId: string) => void;
 }
 
-export function UpgradeList({ state, onBuy }: Props) {
+export function UpgradeList({ state, notation, onBuy }: Props) {
   const available = UPGRADES.filter(
     (def) => !hasUpgrade(state, def.id) && state.ore >= def.cost * REVEAL_RATIO,
   );
@@ -36,7 +37,7 @@ export function UpgradeList({ state, onBuy }: Props) {
                 </div>
                 <p className="card-desc">{def.description}</p>
                 <div className="card-foot">
-                  <span className="card-cost">{formatNumber(def.cost)} ore</span>
+                  <span className="card-cost">{formatNumber(def.cost, notation)} ore</span>
                 </div>
               </button>
             </li>

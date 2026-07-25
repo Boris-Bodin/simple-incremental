@@ -1,18 +1,23 @@
 import { GENERATORS } from '../game/config';
 import {
-  canAffordGenerator,
-  generatorCost,
+  bestBuyGeneratorId,
+  bulkCost,
   generatorProduction,
+  maxAffordable,
   ownedOf,
+  productionPerSecond,
 } from '../game/engine';
-import { formatNumber, formatRate } from '../game/format';
+import { formatDuration, formatNumber, formatRate, type Notation } from '../game/format';
 import type { GameState } from '../game/types';
+import type { BuyAmount } from './BuyAmountSelector';
 
 const REVEAL_RATIO = 0.4;
 
 interface Props {
   state: GameState;
-  onBuy: (generatorId: string) => void;
+  amount: BuyAmount;
+  notation: Notation;
+  onBuy: (generatorId: string, count: number) => void;
 }
 
 function isRevealed(state: GameState, index: number): boolean {
@@ -22,7 +27,11 @@ function isRevealed(state: GameState, index: number): boolean {
   return ownedOf(state, GENERATORS[index - 1].id) > 0;
 }
 
-export function GeneratorList({ state, onBuy }: Props) {
+export function GeneratorList({ state, amount, notation, onBuy }: Props) {
+  const bestId = bestBuyGeneratorId(state);
+  const requested = amount === 'max' ? Number.POSITIVE_INFINITY : amount;
+  const pps = productionPerSecond(state);
+
   return (
     <section className="panel">
       <h2>Generators</h2>
@@ -30,24 +39,43 @@ export function GeneratorList({ state, onBuy }: Props) {
         {GENERATORS.map((def, index) => {
           if (!isRevealed(state, index)) return null;
           const owned = ownedOf(state, def.id);
-          const cost = generatorCost(state, def.id);
-          const affordable = canAffordGenerator(state, def.id);
+          const affordableCount = maxAffordable(state, def.id);
+          const buyCount = Math.min(requested, affordableCount);
+          const affordable = buyCount >= 1;
+          const shownCount = affordable ? buyCount : 1;
+          const cost = bulkCost(state, def.id, shownCount);
+          const fill = Math.min(1, state.ore / cost);
+          const secondsLeft = pps > 0 ? (cost - state.ore) / pps : Infinity;
+
           return (
             <li key={def.id}>
               <button
                 type="button"
                 className="card"
                 disabled={!affordable}
-                onClick={() => onBuy(def.id)}
+                onClick={() => onBuy(def.id, requested)}
               >
+                <span className="card-fill" style={{ width: `${fill * 100}%` }} aria-hidden="true" />
                 <div className="card-head">
-                  <span className="card-name">{def.name}</span>
+                  <span className="card-name">
+                    {def.id === bestId && <span className="best-buy" title="Best value">⭐</span>}
+                    {def.name}
+                  </span>
                   <span className="card-owned">×{owned}</span>
                 </div>
                 <p className="card-desc">{def.description}</p>
                 <div className="card-foot">
-                  <span className="card-cost">{formatNumber(cost)} ore</span>
-                  <span className="card-rate">{formatRate(generatorProduction(state, def.id))}</span>
+                  <span className="card-cost">
+                    {formatNumber(cost, notation)} ore
+                    <span className="card-qty"> ×{shownCount}</span>
+                  </span>
+                  <span className="card-rate">
+                    {affordable
+                      ? formatRate(generatorProduction(state, def.id), notation)
+                      : Number.isFinite(secondsLeft)
+                        ? `in ${formatDuration(secondsLeft)}`
+                        : '—'}
+                  </span>
                 </div>
               </button>
             </li>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   buyGenerator,
+  buyGeneratorBulk,
   buyUpgrade,
   doPrestige,
   initialState,
@@ -25,7 +26,7 @@ export interface GameApi {
   offline: OfflineProgress | null;
   dismissOffline: () => void;
   mineOnce: () => void;
-  buyGenerator: (generatorId: string) => void;
+  buyGenerator: (generatorId: string, count: number) => void;
   buyUpgrade: (upgradeId: string) => void;
   prestige: () => void;
   reset: () => void;
@@ -67,7 +68,10 @@ export function useGame(): GameApi {
 
   const mineOnce = useCallback(() => setState(mine), []);
   const buyGeneratorAction = useCallback(
-    (generatorId: string) => setState((prev) => buyGenerator(prev, generatorId)),
+    (generatorId: string, count: number) =>
+      setState((prev) =>
+        count === 1 ? buyGenerator(prev, generatorId) : buyGeneratorBulk(prev, generatorId, count),
+      ),
     [],
   );
   const buyUpgradeAction = useCallback(

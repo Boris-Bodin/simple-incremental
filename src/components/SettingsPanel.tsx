@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import type { Settings } from '../game/settings';
 
 interface Props {
+  settings: Settings;
+  onUpdate: (patch: Partial<Settings>) => void;
   exportSave: () => string;
   importSave: (raw: string) => boolean;
   onReset: () => void;
@@ -11,7 +14,7 @@ interface Status {
   message: string;
 }
 
-export function SettingsPanel({ exportSave, importSave, onReset }: Props) {
+export function SettingsPanel({ settings, onUpdate, exportSave, importSave, onReset }: Props) {
   const [exported, setExported] = useState('');
   const [importText, setImportText] = useState('');
   const [status, setStatus] = useState<Status | null>(null);
@@ -52,6 +55,50 @@ export function SettingsPanel({ exportSave, importSave, onReset }: Props) {
 
   return (
     <div className="settings">
+      <section className="panel">
+        <h2>Preferences</h2>
+        <label className="settings-field">
+          <span>Effects</span>
+          <select
+            value={settings.juice}
+            onChange={(event) => onUpdate({ juice: event.target.value as Settings['juice'] })}
+          >
+            <option value="off">Off</option>
+            <option value="sober">Subtle</option>
+            <option value="max">Max</option>
+          </select>
+        </label>
+        <label className="settings-field">
+          <span>Sound</span>
+          <input
+            type="checkbox"
+            checked={settings.sound}
+            onChange={(event) => onUpdate({ sound: event.target.checked })}
+          />
+        </label>
+        <label className="settings-field">
+          <span>Number format</span>
+          <select
+            value={settings.notation}
+            onChange={(event) => onUpdate({ notation: event.target.value as Settings['notation'] })}
+          >
+            <option value="short">Short (K/M/B)</option>
+            <option value="scientific">Scientific</option>
+          </select>
+        </label>
+        <label className="settings-field">
+          <span>Theme</span>
+          <select
+            value={settings.theme}
+            onChange={(event) => onUpdate({ theme: event.target.value as Settings['theme'] })}
+          >
+            <option value="auto">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </label>
+      </section>
+
       <section className="panel">
         <h2>Export</h2>
         <p className="settings-hint">Copy this code to back up or transfer your progress.</p>
