@@ -1124,6 +1124,53 @@
   opacity: 0.5;
 }
 
+/* ---------- Prestige challenges ---------- */
+.challenge-active {
+  border-color: var(--danger);
+}
+
+.challenge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.challenge-row.is-done {
+  border-color: var(--good);
+}
+
+.challenge-info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.challenge-tick {
+  color: var(--good);
+  font-weight: 700;
+}
+
+.challenge-start {
+  padding: 9px 16px;
+  border: 2px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: var(--danger-soft);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.18s ease;
+}
+
+.challenge-start:hover {
+  background: rgba(248, 113, 113, 0.22);
+}
+
 /* ---------- Ascension ---------- */
 .ascension-panel {
   border-color: var(--accent);

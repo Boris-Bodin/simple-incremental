@@ -14,11 +14,14 @@ import {
   GOLDEN_MULTIPLIER,
 } from '../game/config';
 import {
+  abandonChallenge,
   activateBoost,
   buyGenerator,
   buyGeneratorBulk,
   buyTalent,
   buyUpgrade,
+  completeChallenge,
+  startChallenge,
   canClaimDaily,
   claimDaily,
   claimDailyChallenge,
@@ -84,6 +87,9 @@ export interface GameApi {
   prestige: () => void;
   ascend: () => void;
   refine: () => void;
+  startChallenge: (id: string) => void;
+  completeChallenge: () => void;
+  abandonChallenge: () => void;
   buyTalent: (talentId: string) => void;
   respecTalents: () => void;
   unlockAutomation: (id: string) => void;
@@ -291,6 +297,12 @@ export function useGame(): GameApi {
   const prestige = useCallback(() => setState(doPrestige), []);
   const ascend = useCallback(() => setState(doAscension), []);
   const refineOre = useCallback(() => setState(refine), []);
+  const startChallengeAction = useCallback(
+    (id: string) => setState((prev) => startChallenge(prev, id)),
+    [],
+  );
+  const completeChallengeAction = useCallback(() => setState(completeChallenge), []);
+  const abandonChallengeAction = useCallback(() => setState(abandonChallenge), []);
   const buyTalentAction = useCallback(
     (talentId: string) => setState((prev) => buyTalent(prev, talentId)),
     [],
@@ -334,6 +346,9 @@ export function useGame(): GameApi {
     prestige,
     ascend,
     refine: refineOre,
+    startChallenge: startChallengeAction,
+    completeChallenge: completeChallengeAction,
+    abandonChallenge: abandonChallengeAction,
     buyTalent: buyTalentAction,
     respecTalents: respecTalentsAction,
     unlockAutomation: unlockAutomationAction,

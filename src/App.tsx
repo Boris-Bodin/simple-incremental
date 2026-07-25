@@ -3,6 +3,7 @@ import { AscensionPanel } from './components/AscensionPanel';
 import { AutomationPanel } from './components/AutomationPanel';
 import { BoostBar } from './components/BoostBar';
 import { BuyAmountSelector, type BuyAmount } from './components/BuyAmountSelector';
+import { ChallengePanel } from './components/ChallengePanel';
 import { ClickArea } from './components/ClickArea';
 import { DailyChallengesPanel } from './components/DailyChallengesPanel';
 import { DailyPanel } from './components/DailyPanel';
@@ -107,6 +108,13 @@ export function App() {
               state={game.state}
               onUnlock={game.unlockAutomation}
               onToggle={game.toggleAutomation}
+            />
+            <ChallengePanel
+              state={game.state}
+              notation={settings.notation}
+              onStart={game.startChallenge}
+              onComplete={game.completeChallenge}
+              onAbandon={game.abandonChallenge}
             />
           </div>
           <TalentTree
