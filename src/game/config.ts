@@ -1,10 +1,46 @@
-import type { GeneratorDef, UpgradeDef } from './types';
+import type { AchievementDef, GameState, GeneratorDef, Meteo, UpgradeDef } from './types';
 
 export const COST_GROWTH = 1.15;
 export const PRESTIGE_BONUS_PER_POINT = 0.02;
 export const PRESTIGE_ORE_PER_POINT = 1_000_000;
 export const OFFLINE_CAP_SECONDS = 8 * 3600;
 export const OFFLINE_MIN_SECONDS = 60;
+
+export const CRIT_CHANCE = 0.1;
+export const CRIT_MULTIPLIER = 7;
+export const ACHIEVEMENT_BONUS = 0.01;
+
+export const FRENZY_MULTIPLIER = 3;
+export const FRENZY_DURATION_MS = 60_000;
+export const FRENZY_COOLDOWN_MS = 600_000;
+
+export const GOLDEN_MULTIPLIER = 7;
+export const GOLDEN_DURATION_MS = 20_000;
+export const GOLDEN_MIN_INTERVAL_MS = 60_000;
+export const GOLDEN_MAX_INTERVAL_MS = 150_000;
+
+export const CAVEIN_MALUS = 0.5;
+export const CAVEIN_DURATION_MS = 20_000;
+export const EVENT_MIN_INTERVAL_MS = 90_000;
+export const EVENT_MAX_INTERVAL_MS = 210_000;
+export const EVENT_PROMPT_MS = 10_000;
+
+export const DAILY_STREAK_STEP = 0.1;
+export const DAILY_STREAK_CAP = 7;
+export const DAILY_BOOST_DURATION_MS = 5 * 60_000;
+
+export const METEO_POOL: Meteo[] = [
+  { id: 'clear', label: 'Clear skies', description: 'A calm day in the mine.', multiplier: 1 },
+  { id: 'rich', label: 'Rich seams', description: 'The ore runs generous today.', multiplier: 1.2 },
+  { id: 'rush', label: 'Ore rush', description: 'Everything is booming!', multiplier: 1.5 },
+  { id: 'humid', label: 'Humid tunnels', description: 'The damp slows the drills.', multiplier: 0.9 },
+];
+
+const ownsAnyGenerator = (state: GameState): boolean =>
+  Object.values(state.generators).some((count) => count > 0);
+
+const ownsAtLeast = (state: GameState, amount: number): boolean =>
+  Object.values(state.generators).some((count) => count >= amount);
 
 export const GENERATORS: GeneratorDef[] = [
   {
@@ -191,6 +227,69 @@ export const UPGRADES: UpgradeDef[] = [
     description: 'Doubles global production.',
     cost: 2_000_000_000_000,
     effect: { kind: 'global', multiplier: 2 },
+  },
+];
+
+export const ACHIEVEMENTS: AchievementDef[] = [
+  {
+    id: 'first-strike',
+    name: 'First strike',
+    description: 'Mine ore for the first time.',
+    condition: (s) => s.stats.clicks >= 1,
+  },
+  {
+    id: 'clicker',
+    name: 'Getting the hang of it',
+    description: 'Mine manually 100 times.',
+    condition: (s) => s.stats.clicks >= 100,
+  },
+  {
+    id: 'first-hire',
+    name: 'First hire',
+    description: 'Own your first generator.',
+    condition: ownsAnyGenerator,
+  },
+  {
+    id: 'assembly-line',
+    name: 'Assembly line',
+    description: 'Own 10 of a single generator.',
+    condition: (s) => ownsAtLeast(s, 10),
+  },
+  {
+    id: 'ore-1k',
+    name: 'Small fortune',
+    description: 'Earn 1K ore in total.',
+    condition: (s) => s.stats.ore >= 1_000,
+  },
+  {
+    id: 'ore-1m',
+    name: 'Ore baron',
+    description: 'Earn 1M ore in total.',
+    condition: (s) => s.stats.ore >= 1_000_000,
+  },
+  {
+    id: 'ore-1b',
+    name: 'Planetary wealth',
+    description: 'Earn 1B ore in total.',
+    condition: (s) => s.stats.ore >= 1_000_000_000,
+  },
+  {
+    id: 'lucky-strike',
+    name: 'Lucky strike',
+    description: 'Land 50 critical hits.',
+    condition: (s) => s.stats.criticals >= 50,
+  },
+  {
+    id: 'first-prestige',
+    name: 'Fresh start',
+    description: 'Prestige for the first time.',
+    condition: (s) => s.stats.prestiges >= 1,
+  },
+  {
+    id: 'reborn',
+    name: 'Reborn',
+    description: 'Prestige 10 times.',
+    condition: (s) => s.stats.prestiges >= 10,
   },
 ];
 

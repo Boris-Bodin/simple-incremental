@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { PRESTIGE_ORE_PER_POINT } from './config';
+import { ACHIEVEMENT_BONUS, CRIT_MULTIPLIER, PRESTIGE_ORE_PER_POINT } from './config';
 import {
+  achievementMultiplier,
+  activateBoost,
+  activeBoostMultiplier,
   bestBuyGeneratorId,
+  canClaimDaily,
+  claimDaily,
   buyGenerator,
   buyGeneratorBulk,
   buyUpgrade,
@@ -11,19 +16,24 @@ import {
   canPrestige,
   clickPower,
   doPrestige,
+  expireBoosts,
   generatorCost,
   generatorProduction,
   globalMultiplier,
+  grantAchievements,
   hasUpgrade,
   initialState,
   maxAffordable,
   mine,
+  mineCritical,
+  newlyUnlockedAchievements,
   ownedOf,
   prestigeGain,
   productionAddedBy,
   productionPerSecond,
   tick,
 } from './engine';
+import type { Boost } from './types';
 import type { GameState } from './types';
 
 const withState = (overrides: Partial<GameState>): GameState => ({
@@ -138,6 +148,51 @@ describe('mine', () => {
     mine(before);
     expect(before.ore).toBe(0);
     expect(before.clicks).toBe(0);
+  });
+
+  it('tracks lifetime ore and clicks', () => {
+    const s = mine(mine(initialState()));
+    expect(s.stats.ore).toBe(2);
+    expect(s.stats.clicks).toBe(2);
+  });
+});
+
+describe('mineCritical', () => {
+  it('multiplies the click gain and counts the critical', () => {
+    const s = mineCritical(initialState());
+    expect(s.ore).toBe(CRIT_MULTIPLIER);
+    expect(s.clicks).toBe(1);
+    expect(s.stats.criticals).toBe(1);
+    expect(s.stats.clicks).toBe(1);
+  });
+});
+
+describe('achievements', () => {
+  it('unlocks achievements whose condition is met', () => {
+    const s = withState({ stats: { ore: 0, clicks: 1, criticals: 0, prestiges: 0 } });
+    expect(newlyUnlockedAchievements(s)).toContain('first-strike');
+  });
+
+  it('does not re-report already unlocked achievements', () => {
+    const s = withState({
+      stats: { ore: 0, clicks: 1, criticals: 0, prestiges: 0 },
+      achievements: ['first-strike'],
+    });
+    expect(newlyUnlockedAchievements(s)).not.toContain('first-strike');
+  });
+
+  it('grants new achievements without duplicates', () => {
+    const s = grantAchievements(withState({ achievements: ['first-strike'] }), [
+      'first-strike',
+      'clicker',
+    ]);
+    expect(s.achievements).toEqual(['first-strike', 'clicker']);
+  });
+
+  it('scales the global multiplier by unlocked count', () => {
+    const s = withState({ achievements: ['first-strike', 'clicker'] });
+    expect(achievementMultiplier(s)).toBeCloseTo(1 + 2 * ACHIEVEMENT_BONUS);
+    expect(globalMultiplier(s)).toBeCloseTo(1 + 2 * ACHIEVEMENT_BONUS);
   });
 });
 
@@ -269,6 +324,73 @@ describe('bestBuyGeneratorId', () => {
   });
 });
 
+const boost = (overrides: Partial<Boost> = {}): Boost => ({
+  id: 'test',
+  label: 'Test',
+  multiplier: 2,
+  expiresAt: 10_000,
+  ...overrides,
+});
+
+describe('boosts', () => {
+  it('activateBoost appends a boost', () => {
+    const s = activateBoost(initialState(), boost());
+    expect(s.activeBoosts).toHaveLength(1);
+  });
+
+  it('activeBoostMultiplier multiplies all active boosts', () => {
+    const s = withState({ activeBoosts: [boost({ multiplier: 3 }), boost({ multiplier: 2 })] });
+    expect(activeBoostMultiplier(s)).toBe(6);
+  });
+
+  it('folds boosts into the global multiplier', () => {
+    const s = withState({ activeBoosts: [boost({ multiplier: 3 })] });
+    expect(globalMultiplier(s)).toBeCloseTo(3);
+  });
+
+  it('expireBoosts drops boosts past their expiry', () => {
+    const s = withState({
+      activeBoosts: [boost({ id: 'old', expiresAt: 500 }), boost({ id: 'live', expiresAt: 5000 })],
+    });
+    const after = expireBoosts(s, 1000);
+    expect(after.activeBoosts.map((b) => b.id)).toEqual(['live']);
+  });
+
+  it('expireBoosts keeps the same reference when nothing expires', () => {
+    const s = withState({ activeBoosts: [boost({ expiresAt: 5000 })] });
+    expect(expireBoosts(s, 1000)).toBe(s);
+  });
+});
+
+describe('daily reward', () => {
+  const day1 = Date.parse('2026-07-25T12:00:00Z');
+  const day2 = Date.parse('2026-07-26T12:00:00Z');
+  const day4 = Date.parse('2026-07-28T12:00:00Z');
+
+  it('starts a streak and grants a boost on first claim', () => {
+    const s = claimDaily(initialState(), day1);
+    expect(s.loginStreak).toBe(1);
+    expect(s.lastClaimDay).toBe('2026-07-25');
+    expect(s.activeBoosts).toHaveLength(1);
+  });
+
+  it('is a no-op when already claimed today', () => {
+    const once = claimDaily(initialState(), day1);
+    expect(claimDaily(once, day1)).toBe(once);
+    expect(canClaimDaily(once, day1)).toBe(false);
+  });
+
+  it('increments the streak on a consecutive day', () => {
+    const s = claimDaily(claimDaily(initialState(), day1), day2);
+    expect(s.loginStreak).toBe(2);
+  });
+
+  it('resets the streak after a missed day', () => {
+    const s = claimDaily(claimDaily(initialState(), day1), day4);
+    expect(s.loginStreak).toBe(1);
+  });
+});
+
 describe('tick', () => {
   it('accumulates production over time', () => {
     const s = tick(withState({ generators: { 'auto-mine': 1 } }), 2);
@@ -280,6 +402,17 @@ describe('tick', () => {
     const before = withState({ generators: { 'auto-mine': 1 } });
     expect(tick(before, 0)).toBe(before);
     expect(tick(before, -5)).toBe(before);
+  });
+
+  it('applies an active boost to production', () => {
+    const s = tick(withState({ generators: { 'auto-mine': 1 }, activeBoosts: [boost({ multiplier: 2, expiresAt: 100_000 })] }), 2, 1000);
+    expect(s.ore).toBeCloseTo(5600);
+  });
+
+  it('prunes expired boosts before producing', () => {
+    const s = tick(withState({ generators: { 'auto-mine': 1 }, activeBoosts: [boost({ multiplier: 2, expiresAt: 500 })] }), 2, 1000);
+    expect(s.ore).toBeCloseTo(2800);
+    expect(s.activeBoosts).toHaveLength(0);
   });
 });
 
@@ -314,5 +447,17 @@ describe('prestige', () => {
   it('is a no-op below the first threshold', () => {
     const before = withState({ oreThisRun: PRESTIGE_ORE_PER_POINT - 1 });
     expect(doPrestige(before)).toBe(before);
+  });
+
+  it('preserves lifetime stats and achievements and counts the prestige', () => {
+    const before = withState({
+      oreThisRun: 4 * PRESTIGE_ORE_PER_POINT,
+      stats: { ore: 9999, clicks: 42, criticals: 3, prestiges: 1 },
+      achievements: ['first-strike'],
+    });
+    const after = doPrestige(before);
+    expect(after.stats.ore).toBe(9999);
+    expect(after.stats.prestiges).toBe(2);
+    expect(after.achievements).toEqual(['first-strike']);
   });
 });

@@ -19,6 +19,20 @@ export interface UpgradeDef {
   effect: UpgradeEffect;
 }
 
+export interface LifetimeStats {
+  ore: number;
+  clicks: number;
+  criticals: number;
+  prestiges: number;
+}
+
+export interface Boost {
+  id: string;
+  label: string;
+  multiplier: number;
+  expiresAt: number;
+}
+
 export interface GameState {
   ore: number;
   oreThisRun: number;
@@ -26,5 +40,24 @@ export interface GameState {
   generators: Record<string, number>;
   upgrades: string[];
   prestigePoints: number;
+  stats: LifetimeStats;
+  achievements: string[];
+  activeBoosts: Boost[];
+  lastClaimDay: string;
+  loginStreak: number;
   lastSeen: number;
+}
+
+export interface Meteo {
+  id: string;
+  label: string;
+  description: string;
+  multiplier: number;
+}
+
+export interface AchievementDef {
+  id: string;
+  name: string;
+  description: string;
+  condition: (state: GameState) => boolean;
 }

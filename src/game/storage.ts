@@ -19,8 +19,7 @@ export function loadState(): LoadResult {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { state: initialState(), offline: null };
     const parsed = JSON.parse(raw) as Partial<GameState>;
-    const restored: GameState = { ...initialState(), ...parsed };
-    return applyOfflineProgress(restored);
+    return applyOfflineProgress(normalize(parsed));
   } catch {
     return { state: initialState(), offline: null };
   }
@@ -59,18 +58,31 @@ export function importSave(raw: string): GameState | null {
   }
 }
 
-function sanitize(parsed: Partial<GameState>): GameState {
+function normalize(parsed: Partial<GameState>): GameState {
+  const base = initialState();
   const generators =
     typeof parsed.generators === 'object' && parsed.generators !== null
       ? parsed.generators
       : {};
+  const stats =
+    typeof parsed.stats === 'object' && parsed.stats !== null
+      ? { ...base.stats, ...parsed.stats }
+      : base.stats;
   return {
-    ...initialState(),
+    ...base,
     ...parsed,
     generators,
     upgrades: Array.isArray(parsed.upgrades) ? parsed.upgrades : [],
-    lastSeen: Date.now(),
+    achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
+    stats,
+    activeBoosts: [],
+    lastClaimDay: typeof parsed.lastClaimDay === 'string' ? parsed.lastClaimDay : '',
+    loginStreak: typeof parsed.loginStreak === 'number' ? parsed.loginStreak : 0,
   };
+}
+
+function sanitize(parsed: Partial<GameState>): GameState {
+  return { ...normalize(parsed), lastSeen: Date.now() };
 }
 
 function applyOfflineProgress(state: GameState): LoadResult {

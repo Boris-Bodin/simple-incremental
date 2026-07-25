@@ -1,11 +1,18 @@
 import {
+  ACHIEVEMENT_BONUS,
+  ACHIEVEMENTS,
   COST_GROWTH,
+  CRIT_MULTIPLIER,
+  DAILY_BOOST_DURATION_MS,
+  DAILY_STREAK_CAP,
+  DAILY_STREAK_STEP,
   GENERATORS,
   GENERATORS_BY_ID,
   PRESTIGE_BONUS_PER_POINT,
   PRESTIGE_ORE_PER_POINT,
   UPGRADES_BY_ID,
 } from './config';
+import { dayKey, isNextDay } from './daily';
 import type { GameState } from './types';
 
 export function initialState(): GameState {
@@ -16,6 +23,11 @@ export function initialState(): GameState {
     generators: {},
     upgrades: [],
     prestigePoints: 0,
+    stats: { ore: 0, clicks: 0, criticals: 0, prestiges: 0 },
+    achievements: [],
+    activeBoosts: [],
+    lastClaimDay: '',
+    loginStreak: 0,
     lastSeen: Date.now(),
   };
 }
@@ -28,13 +40,47 @@ export function hasUpgrade(state: GameState, upgradeId: string): boolean {
   return state.upgrades.includes(upgradeId);
 }
 
+export function achievementMultiplier(state: GameState): number {
+  return 1 + state.achievements.length * ACHIEVEMENT_BONUS;
+}
+
+export function activeBoostMultiplier(state: GameState): number {
+  return state.activeBoosts.reduce((acc, boost) => acc * boost.multiplier, 1);
+}
+
 export function globalMultiplier(state: GameState): number {
   const fromPrestige = 1 + state.prestigePoints * PRESTIGE_BONUS_PER_POINT;
   const fromUpgrades = state.upgrades.reduce((acc, id) => {
     const effect = UPGRADES_BY_ID[id]?.effect;
     return effect?.kind === 'global' ? acc * effect.multiplier : acc;
   }, 1);
-  return fromPrestige * fromUpgrades;
+  return fromPrestige * fromUpgrades * achievementMultiplier(state) * activeBoostMultiplier(state);
+}
+
+export function activateBoost(state: GameState, boost: GameState['activeBoosts'][number]): GameState {
+  return { ...state, activeBoosts: [...state.activeBoosts, boost] };
+}
+
+export function expireBoosts(state: GameState, now: number): GameState {
+  const kept = state.activeBoosts.filter((boost) => boost.expiresAt > now);
+  return kept.length === state.activeBoosts.length ? state : { ...state, activeBoosts: kept };
+}
+
+export function canClaimDaily(state: GameState, now = Date.now()): boolean {
+  return state.lastClaimDay !== dayKey(now);
+}
+
+export function claimDaily(state: GameState, now = Date.now()): GameState {
+  const key = dayKey(now);
+  if (state.lastClaimDay === key) return state;
+  const streak = isNextDay(state.lastClaimDay, key) ? state.loginStreak + 1 : 1;
+  const multiplier = 1 + Math.min(streak, DAILY_STREAK_CAP) * DAILY_STREAK_STEP;
+  return activateBoost({ ...state, lastClaimDay: key, loginStreak: streak }, {
+    id: `daily-${key}`,
+    label: 'Daily reward',
+    multiplier,
+    expiresAt: now + DAILY_BOOST_DURATION_MS,
+  });
 }
 
 export function clickPower(state: GameState): number {
@@ -129,12 +175,44 @@ export function canAffordUpgrade(state: GameState, upgradeId: string): boolean {
 }
 
 function gain(state: GameState, amount: number): GameState {
-  return { ...state, ore: state.ore + amount, oreThisRun: state.oreThisRun + amount };
+  return {
+    ...state,
+    ore: state.ore + amount,
+    oreThisRun: state.oreThisRun + amount,
+    stats: { ...state.stats, ore: state.stats.ore + amount },
+  };
+}
+
+function registerClick(state: GameState, critical: boolean): GameState {
+  return {
+    ...state,
+    clicks: state.clicks + 1,
+    stats: {
+      ...state.stats,
+      clicks: state.stats.clicks + 1,
+      criticals: state.stats.criticals + (critical ? 1 : 0),
+    },
+  };
 }
 
 export function mine(state: GameState): GameState {
-  const next = gain(state, clickPower(state));
-  return { ...next, clicks: next.clicks + 1 };
+  return registerClick(gain(state, clickPower(state)), false);
+}
+
+export function mineCritical(state: GameState): GameState {
+  return registerClick(gain(state, clickPower(state) * CRIT_MULTIPLIER), true);
+}
+
+export function newlyUnlockedAchievements(state: GameState): string[] {
+  return ACHIEVEMENTS.filter(
+    (def) => !state.achievements.includes(def.id) && def.condition(state),
+  ).map((def) => def.id);
+}
+
+export function grantAchievements(state: GameState, ids: string[]): GameState {
+  const added = ids.filter((id) => !state.achievements.includes(id));
+  if (added.length === 0) return state;
+  return { ...state, achievements: [...state.achievements, ...added] };
 }
 
 export function buyGenerator(state: GameState, generatorId: string): GameState {
@@ -179,10 +257,11 @@ export function buyUpgrade(state: GameState, upgradeId: string): GameState {
   };
 }
 
-export function tick(state: GameState, deltaSeconds: number): GameState {
+export function tick(state: GameState, deltaSeconds: number, now = Date.now()): GameState {
   if (deltaSeconds <= 0) return state;
-  const produced = productionPerSecond(state) * deltaSeconds;
-  return produced > 0 ? gain(state, produced) : state;
+  const pruned = expireBoosts(state, now);
+  const produced = productionPerSecond(pruned) * deltaSeconds;
+  return produced > 0 ? gain(pruned, produced) : pruned;
 }
 
 export function prestigeGain(state: GameState): number {
@@ -196,5 +275,12 @@ export function canPrestige(state: GameState): boolean {
 export function doPrestige(state: GameState): GameState {
   const gained = prestigeGain(state);
   if (gained < 1) return state;
-  return { ...initialState(), prestigePoints: state.prestigePoints + gained };
+  return {
+    ...initialState(),
+    prestigePoints: state.prestigePoints + gained,
+    stats: { ...state.stats, prestiges: state.stats.prestiges + 1 },
+    achievements: state.achievements,
+    lastClaimDay: state.lastClaimDay,
+    loginStreak: state.loginStreak,
+  };
 }
