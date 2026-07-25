@@ -961,3 +961,71 @@
 .respec-button:disabled {
   opacity: 0.5;
 }
+
+/* ---------- Automation ---------- */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.automation-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.automation-row.is-locked {
+  opacity: 0.7;
+}
+
+.automation-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.automation-toggle {
+  min-width: 56px;
+  padding: 7px 14px;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-panel);
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-weight: 700;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.automation-toggle.is-on {
+  background: var(--good-soft);
+  border-color: var(--good);
+  color: var(--good);
+}
+
+.automation-unlock {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border: 2px solid var(--gem);
+  border-radius: var(--radius-sm);
+  background: var(--gem-soft);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.18s ease;
+}
+
+.automation-unlock:not(:disabled):hover {
+  background: rgba(139, 92, 246, 0.32);
+}
+
+.automation-unlock:disabled {
+  opacity: 0.5;
+}

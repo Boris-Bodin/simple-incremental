@@ -29,7 +29,10 @@ import {
   mineCritical,
   newlyUnlockedAchievements,
   respecTalents,
+  runAutomation,
   tick,
+  toggleAutomation,
+  unlockAutomation,
 } from '../game/engine';
 import { dailyMeteo, endOfDay } from '../game/daily';
 import {
@@ -77,6 +80,8 @@ export interface GameApi {
   prestige: () => void;
   buyTalent: (talentId: string) => void;
   respecTalents: () => void;
+  unlockAutomation: (id: string) => void;
+  toggleAutomation: (id: string) => void;
   reset: () => void;
   exportSave: () => string;
   importSave: (raw: string) => boolean;
@@ -119,7 +124,7 @@ export function useGame(): GameApi {
       const now = performance.now();
       const delta = (now - last) / 1000;
       last = now;
-      setState((prev) => tick(prev, delta));
+      setState((prev) => runAutomation(tick(prev, delta)));
     }, TICK_MS);
 
     const save = window.setInterval(() => saveState(stateRef.current), AUTOSAVE_MS);
@@ -278,6 +283,14 @@ export function useGame(): GameApi {
     [],
   );
   const respecTalentsAction = useCallback(() => setState(respecTalents), []);
+  const unlockAutomationAction = useCallback(
+    (id: string) => setState((prev) => unlockAutomation(prev, id)),
+    [],
+  );
+  const toggleAutomationAction = useCallback(
+    (id: string) => setState((prev) => toggleAutomation(prev, id)),
+    [],
+  );
   const dismissOffline = useCallback(() => setOffline(null), []);
   const reset = useCallback(() => {
     clearSave();
@@ -308,6 +321,8 @@ export function useGame(): GameApi {
     prestige,
     buyTalent: buyTalentAction,
     respecTalents: respecTalentsAction,
+    unlockAutomation: unlockAutomationAction,
+    toggleAutomation: toggleAutomationAction,
     reset,
     exportSave,
     importSave,

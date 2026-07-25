@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AutomationPanel } from './components/AutomationPanel';
 import { BoostBar } from './components/BoostBar';
 import { BuyAmountSelector, type BuyAmount } from './components/BuyAmountSelector';
 import { ClickArea } from './components/ClickArea';
@@ -91,7 +92,14 @@ export function App() {
 
       {tab === 'prestige' && (
         <div className="columns">
-          <PrestigePanel state={game.state} onPrestige={prestige} />
+          <div className="stack">
+            <PrestigePanel state={game.state} onPrestige={prestige} />
+            <AutomationPanel
+              state={game.state}
+              onUnlock={game.unlockAutomation}
+              onToggle={game.toggleAutomation}
+            />
+          </div>
           <TalentTree
             state={game.state}
             onBuy={game.buyTalent}
