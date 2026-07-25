@@ -1,4 +1,11 @@
-import type { AchievementDef, GameState, GeneratorDef, Meteo, UpgradeDef } from './types';
+import type {
+  AchievementDef,
+  GameState,
+  GeneratorDef,
+  Meteo,
+  TalentDef,
+  UpgradeDef,
+} from './types';
 
 export const COST_GROWTH = 1.15;
 export const PRESTIGE_BONUS_PER_POINT = 0.02;
@@ -28,6 +35,49 @@ export const EVENT_PROMPT_MS = 10_000;
 export const DAILY_STREAK_STEP = 0.1;
 export const DAILY_STREAK_CAP = 7;
 export const DAILY_BOOST_DURATION_MS = 5 * 60_000;
+
+export const TALENTS: TalentDef[] = [
+  {
+    id: 'deep-veins',
+    name: 'Deep veins',
+    description: '+2% global production per level.',
+    maxLevel: 50,
+    baseCost: 1,
+    costGrowth: 1.5,
+    effect: { kind: 'global', perLevel: 0.02 },
+  },
+  {
+    id: 'sharp-strikes',
+    name: 'Sharp strikes',
+    description: '+20% click power per level.',
+    maxLevel: 20,
+    baseCost: 2,
+    costGrowth: 1.6,
+    effect: { kind: 'click', perLevel: 0.2 },
+  },
+  {
+    id: 'prospector',
+    name: "Prospector's eye",
+    description: '+1% critical chance per level.',
+    maxLevel: 20,
+    baseCost: 3,
+    costGrowth: 1.7,
+    effect: { kind: 'crit', perLevel: 0.01 },
+  },
+  {
+    id: 'overdrive',
+    name: 'Overdrive',
+    description: '+5% global production per level.',
+    maxLevel: 30,
+    baseCost: 4,
+    costGrowth: 1.7,
+    effect: { kind: 'global', perLevel: 0.05 },
+  },
+];
+
+export const TALENTS_BY_ID: Record<string, TalentDef> = Object.fromEntries(
+  TALENTS.map((t) => [t.id, t]),
+);
 
 export const METEO_POOL: Meteo[] = [
   { id: 'clear', label: 'Clear skies', description: 'A calm day in the mine.', multiplier: 1 },

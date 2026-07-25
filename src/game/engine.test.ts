@@ -5,8 +5,16 @@ import {
   activateBoost,
   activeBoostMultiplier,
   bestBuyGeneratorId,
+  buyTalent,
+  canBuyTalent,
   canClaimDaily,
   claimDaily,
+  critChance,
+  respecTalents,
+  talentClickMultiplier,
+  talentCost,
+  talentLevel,
+  talentPointsSpent,
   buyGenerator,
   buyGeneratorBulk,
   buyUpgrade,
@@ -68,12 +76,12 @@ describe('globalMultiplier', () => {
     expect(globalMultiplier(initialState())).toBe(1);
   });
 
-  it('grows +2% per prestige point', () => {
-    expect(globalMultiplier(withState({ prestigePoints: 5 }))).toBeCloseTo(1.1);
+  it('grows with global talents', () => {
+    expect(globalMultiplier(withState({ talents: { 'deep-veins': 5 } }))).toBeCloseTo(1.1);
   });
 
-  it('stacks global upgrades multiplicatively with prestige', () => {
-    const s = withState({ prestigePoints: 5, upgrades: ['shift-work'] });
+  it('stacks global upgrades multiplicatively with talents', () => {
+    const s = withState({ talents: { 'deep-veins': 5 }, upgrades: ['shift-work'] });
     expect(globalMultiplier(s)).toBeCloseTo(1.1 * 1.25);
   });
 });
@@ -359,6 +367,46 @@ describe('boosts', () => {
   it('expireBoosts keeps the same reference when nothing expires', () => {
     const s = withState({ activeBoosts: [boost({ expiresAt: 5000 })] });
     expect(expireBoosts(s, 1000)).toBe(s);
+  });
+});
+
+describe('talents', () => {
+  it('costs baseCost for the first level and grows per level', () => {
+    const s = initialState();
+    expect(talentCost(s, 'deep-veins')).toBe(1);
+    expect(talentCost(withState({ talents: { 'deep-veins': 1 } }), 'deep-veins')).toBe(
+      Math.ceil(1 * 1.5),
+    );
+  });
+
+  it('buys a talent and deducts prestige points', () => {
+    const s = buyTalent(withState({ prestigePoints: 5 }), 'sharp-strikes');
+    expect(talentLevel(s, 'sharp-strikes')).toBe(1);
+    expect(s.prestigePoints).toBe(3);
+  });
+
+  it('cannot buy without enough points', () => {
+    const before = withState({ prestigePoints: 1 });
+    expect(canBuyTalent(before, 'sharp-strikes')).toBe(false);
+    expect(buyTalent(before, 'sharp-strikes')).toBe(before);
+  });
+
+  it('cannot buy beyond max level', () => {
+    const maxed = withState({ prestigePoints: 1e9, talents: { prospector: 20 } });
+    expect(canBuyTalent(maxed, 'prospector')).toBe(false);
+  });
+
+  it('applies click and crit talents', () => {
+    expect(talentClickMultiplier(withState({ talents: { 'sharp-strikes': 2 } }))).toBeCloseTo(1.4);
+    expect(critChance(withState({ talents: { prospector: 5 } }))).toBeCloseTo(0.15);
+  });
+
+  it('respec refunds all spent points and clears talents', () => {
+    const invested = buyTalent(buyTalent(withState({ prestigePoints: 10 }), 'deep-veins'), 'deep-veins');
+    const spent = talentPointsSpent(invested);
+    const refunded = respecTalents(invested);
+    expect(refunded.talents).toEqual({});
+    expect(refunded.prestigePoints).toBe(invested.prestigePoints + spent);
   });
 });
 

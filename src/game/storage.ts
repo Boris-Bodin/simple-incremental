@@ -68,6 +68,8 @@ function normalize(parsed: Partial<GameState>): GameState {
     typeof parsed.stats === 'object' && parsed.stats !== null
       ? { ...base.stats, ...parsed.stats }
       : base.stats;
+  const talents =
+    typeof parsed.talents === 'object' && parsed.talents !== null ? parsed.talents : {};
   return {
     ...base,
     ...parsed,
@@ -75,6 +77,7 @@ function normalize(parsed: Partial<GameState>): GameState {
     upgrades: Array.isArray(parsed.upgrades) ? parsed.upgrades : [],
     achievements: Array.isArray(parsed.achievements) ? parsed.achievements : [],
     stats,
+    talents,
     activeBoosts: [],
     lastClaimDay: typeof parsed.lastClaimDay === 'string' ? parsed.lastClaimDay : '',
     loginStreak: typeof parsed.loginStreak === 'number' ? parsed.loginStreak : 0,

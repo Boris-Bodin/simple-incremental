@@ -2,18 +2,20 @@ import {
   ACHIEVEMENT_BONUS,
   ACHIEVEMENTS,
   COST_GROWTH,
+  CRIT_CHANCE,
   CRIT_MULTIPLIER,
   DAILY_BOOST_DURATION_MS,
   DAILY_STREAK_CAP,
   DAILY_STREAK_STEP,
   GENERATORS,
   GENERATORS_BY_ID,
-  PRESTIGE_BONUS_PER_POINT,
   PRESTIGE_ORE_PER_POINT,
+  TALENTS,
+  TALENTS_BY_ID,
   UPGRADES_BY_ID,
 } from './config';
 import { dayKey, isNextDay } from './daily';
-import type { GameState } from './types';
+import type { GameState, TalentEffect } from './types';
 
 export function initialState(): GameState {
   return {
@@ -26,10 +28,72 @@ export function initialState(): GameState {
     stats: { ore: 0, clicks: 0, criticals: 0, prestiges: 0 },
     achievements: [],
     activeBoosts: [],
+    talents: {},
     lastClaimDay: '',
     loginStreak: 0,
     lastSeen: Date.now(),
   };
+}
+
+export function talentLevel(state: GameState, talentId: string): number {
+  return state.talents[talentId] ?? 0;
+}
+
+function sumTalentEffect(state: GameState, kind: TalentEffect['kind']): number {
+  return TALENTS.reduce((acc, def) => {
+    if (def.effect.kind !== kind) return acc;
+    return acc + talentLevel(state, def.id) * def.effect.perLevel;
+  }, 0);
+}
+
+export function talentGlobalMultiplier(state: GameState): number {
+  return 1 + sumTalentEffect(state, 'global');
+}
+
+export function talentClickMultiplier(state: GameState): number {
+  return 1 + sumTalentEffect(state, 'click');
+}
+
+export function critChance(state: GameState): number {
+  return Math.min(1, CRIT_CHANCE + sumTalentEffect(state, 'crit'));
+}
+
+export function talentCost(state: GameState, talentId: string): number {
+  const def = TALENTS_BY_ID[talentId];
+  if (!def) return Infinity;
+  return Math.ceil(def.baseCost * def.costGrowth ** talentLevel(state, talentId));
+}
+
+export function canBuyTalent(state: GameState, talentId: string): boolean {
+  const def = TALENTS_BY_ID[talentId];
+  if (!def || talentLevel(state, talentId) >= def.maxLevel) return false;
+  return state.prestigePoints >= talentCost(state, talentId);
+}
+
+export function buyTalent(state: GameState, talentId: string): GameState {
+  if (!canBuyTalent(state, talentId)) return state;
+  const cost = talentCost(state, talentId);
+  return {
+    ...state,
+    prestigePoints: state.prestigePoints - cost,
+    talents: { ...state.talents, [talentId]: talentLevel(state, talentId) + 1 },
+  };
+}
+
+export function talentPointsSpent(state: GameState): number {
+  return TALENTS.reduce((total, def) => {
+    let spent = 0;
+    for (let level = 0; level < talentLevel(state, def.id); level++) {
+      spent += Math.ceil(def.baseCost * def.costGrowth ** level);
+    }
+    return total + spent;
+  }, 0);
+}
+
+export function respecTalents(state: GameState): GameState {
+  const refund = talentPointsSpent(state);
+  if (refund === 0) return state;
+  return { ...state, prestigePoints: state.prestigePoints + refund, talents: {} };
 }
 
 export function ownedOf(state: GameState, generatorId: string): number {
@@ -49,12 +113,16 @@ export function activeBoostMultiplier(state: GameState): number {
 }
 
 export function globalMultiplier(state: GameState): number {
-  const fromPrestige = 1 + state.prestigePoints * PRESTIGE_BONUS_PER_POINT;
   const fromUpgrades = state.upgrades.reduce((acc, id) => {
     const effect = UPGRADES_BY_ID[id]?.effect;
     return effect?.kind === 'global' ? acc * effect.multiplier : acc;
   }, 1);
-  return fromPrestige * fromUpgrades * achievementMultiplier(state) * activeBoostMultiplier(state);
+  return (
+    talentGlobalMultiplier(state) *
+    fromUpgrades *
+    achievementMultiplier(state) *
+    activeBoostMultiplier(state)
+  );
 }
 
 export function activateBoost(state: GameState, boost: GameState['activeBoosts'][number]): GameState {
@@ -88,7 +156,7 @@ export function clickPower(state: GameState): number {
     const effect = UPGRADES_BY_ID[id]?.effect;
     return effect?.kind === 'click' ? acc * effect.multiplier : acc;
   }, 1);
-  return fromUpgrades * globalMultiplier(state);
+  return fromUpgrades * talentClickMultiplier(state) * globalMultiplier(state);
 }
 
 function generatorMultiplier(state: GameState, generatorId: string): number {
@@ -280,6 +348,7 @@ export function doPrestige(state: GameState): GameState {
     prestigePoints: state.prestigePoints + gained,
     stats: { ...state.stats, prestiges: state.stats.prestiges + 1 },
     achievements: state.achievements,
+    talents: state.talents,
     lastClaimDay: state.lastClaimDay,
     loginStreak: state.loginStreak,
   };

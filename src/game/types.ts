@@ -43,9 +43,25 @@ export interface GameState {
   stats: LifetimeStats;
   achievements: string[];
   activeBoosts: Boost[];
+  talents: Record<string, number>;
   lastClaimDay: string;
   loginStreak: number;
   lastSeen: number;
+}
+
+export type TalentEffect =
+  | { kind: 'global'; perLevel: number }
+  | { kind: 'click'; perLevel: number }
+  | { kind: 'crit'; perLevel: number };
+
+export interface TalentDef {
+  id: string;
+  name: string;
+  description: string;
+  maxLevel: number;
+  baseCost: number;
+  costGrowth: number;
+  effect: TalentEffect;
 }
 
 export interface Meteo {
