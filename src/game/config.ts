@@ -1,6 +1,7 @@
 import type {
   AchievementDef,
   AutomationDef,
+  ChallengeDef,
   DailyChallengeDef,
   EraDef,
   GameState,
@@ -9,6 +10,39 @@ import type {
   TalentDef,
   UpgradeDef,
 } from './types';
+
+export const EXPENSIVE_COST_GROWTH = 1.3;
+
+export const CHALLENGES: ChallengeDef[] = [
+  {
+    id: 'bare-hands',
+    name: 'Bare hands',
+    description: 'Manual mining is disabled. Reach the goal on generators alone.',
+    modifier: 'no-click',
+    goal: 1_000_000,
+    reward: 1.5,
+  },
+  {
+    id: 'no-machines',
+    name: 'No machines',
+    description: 'Generators produce nothing. Reach the goal by hand.',
+    modifier: 'no-generators',
+    goal: 100_000,
+    reward: 1.5,
+  },
+  {
+    id: 'inflation',
+    name: 'Inflation',
+    description: 'Generator costs grow much faster. Push through the goal anyway.',
+    modifier: 'expensive',
+    goal: 10_000_000,
+    reward: 2,
+  },
+];
+
+export const CHALLENGES_BY_ID: Record<string, ChallengeDef> = Object.fromEntries(
+  CHALLENGES.map((c) => [c.id, c]),
+);
 
 export const DAILY_CHALLENGES_PER_DAY = 3;
 

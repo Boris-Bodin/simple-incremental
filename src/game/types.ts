@@ -53,7 +53,20 @@ export interface GameState {
   loginStreak: number;
   dayStart: DailyBaseline;
   dailyChallengesDone: string[];
+  activeChallenge: string | null;
+  completedChallenges: string[];
   lastSeen: number;
+}
+
+export type ChallengeModifier = 'no-click' | 'no-generators' | 'expensive';
+
+export interface ChallengeDef {
+  id: string;
+  name: string;
+  description: string;
+  modifier: ChallengeModifier;
+  goal: number;
+  reward: number;
 }
 
 export type DailyMetric = 'ore' | 'clicks' | 'criticals';

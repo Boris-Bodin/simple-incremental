@@ -3,8 +3,10 @@ import {
   ACHIEVEMENTS,
   ASCENSION_GEMS_PER_CRYSTAL,
   AUTOMATIONS_BY_ID,
+  CHALLENGES_BY_ID,
   COST_GROWTH,
   DAILY_CHALLENGES_BY_ID,
+  EXPENSIVE_COST_GROWTH,
   CRIT_CHANCE,
   CRIT_MULTIPLIER,
   CRYSTAL_BONUS,
@@ -46,8 +48,25 @@ export function initialState(): GameState {
     loginStreak: 0,
     dayStart: { date: '', ore: 0, clicks: 0, criticals: 0 },
     dailyChallengesDone: [],
+    activeChallenge: null,
+    completedChallenges: [],
     lastSeen: Date.now(),
   };
+}
+
+function activeModifier(state: GameState): string | null {
+  return state.activeChallenge ? (CHALLENGES_BY_ID[state.activeChallenge]?.modifier ?? null) : null;
+}
+
+function costGrowthFor(state: GameState): number {
+  return activeModifier(state) === 'expensive' ? EXPENSIVE_COST_GROWTH : COST_GROWTH;
+}
+
+export function challengeRewardMultiplier(state: GameState): number {
+  return state.completedChallenges.reduce(
+    (acc, id) => acc * (CHALLENGES_BY_ID[id]?.reward ?? 1),
+    1,
+  );
 }
 
 export function talentLevel(state: GameState, talentId: string): number {
@@ -225,7 +244,8 @@ export function globalMultiplier(state: GameState): number {
     achievementMultiplier(state) *
     activeBoostMultiplier(state) *
     crystalMultiplier(state) *
-    ingotMultiplier(state)
+    ingotMultiplier(state) *
+    challengeRewardMultiplier(state)
   );
 }
 
@@ -302,6 +322,7 @@ export function claimDailyChallenge(state: GameState, id: string, now = Date.now
 }
 
 export function clickPower(state: GameState): number {
+  if (activeModifier(state) === 'no-click') return 0;
   const fromUpgrades = state.upgrades.reduce((acc, id) => {
     const effect = UPGRADES_BY_ID[id]?.effect;
     return effect?.kind === 'click' ? acc * effect.multiplier : acc;
@@ -320,7 +341,7 @@ function generatorMultiplier(state: GameState, generatorId: string): number {
 
 export function generatorProduction(state: GameState, generatorId: string): number {
   const def = GENERATORS_BY_ID[generatorId];
-  if (!def) return 0;
+  if (!def || activeModifier(state) === 'no-generators') return 0;
   return (
     ownedOf(state, generatorId) *
     def.baseProduction *
@@ -349,7 +370,7 @@ export function currentEra(state: GameState): EraDef {
 export function generatorCost(state: GameState, generatorId: string): number {
   const def = GENERATORS_BY_ID[generatorId];
   if (!def) return Infinity;
-  return Math.ceil(def.baseCost * COST_GROWTH ** ownedOf(state, generatorId));
+  return Math.ceil(def.baseCost * costGrowthFor(state) ** ownedOf(state, generatorId));
 }
 
 export function canAffordGenerator(state: GameState, generatorId: string): boolean {
@@ -360,9 +381,10 @@ export function bulkCost(state: GameState, generatorId: string, count: number): 
   const def = GENERATORS_BY_ID[generatorId];
   if (!def || count <= 0) return def ? 0 : Infinity;
   const owned = ownedOf(state, generatorId);
+  const growth = costGrowthFor(state);
   let total = 0;
   for (let i = 0; i < count; i++) {
-    total += Math.ceil(def.baseCost * COST_GROWTH ** (owned + i));
+    total += Math.ceil(def.baseCost * growth ** (owned + i));
   }
   return total;
 }
@@ -371,10 +393,11 @@ export function maxAffordable(state: GameState, generatorId: string): number {
   const def = GENERATORS_BY_ID[generatorId];
   if (!def) return 0;
   const owned = ownedOf(state, generatorId);
+  const growth = costGrowthFor(state);
   let count = 0;
   let spent = 0;
   for (;;) {
-    const next = spent + Math.ceil(def.baseCost * COST_GROWTH ** (owned + count));
+    const next = spent + Math.ceil(def.baseCost * growth ** (owned + count));
     if (next > state.ore) return count;
     spent = next;
     count += 1;
@@ -519,6 +542,7 @@ export function doPrestige(state: GameState): GameState {
     loginStreak: state.loginStreak,
     dayStart: state.dayStart,
     dailyChallengesDone: state.dailyChallengesDone,
+    completedChallenges: state.completedChallenges,
   };
 }
 
@@ -546,5 +570,52 @@ export function doAscension(state: GameState): GameState {
     loginStreak: state.loginStreak,
     dayStart: state.dayStart,
     dailyChallengesDone: state.dailyChallengesDone,
+    completedChallenges: state.completedChallenges,
   };
+}
+
+function freshRun(state: GameState): GameState {
+  return {
+    ...initialState(),
+    generators: state.generators,
+    upgrades: state.upgrades,
+    ingots: state.ingots,
+    prestigePoints: state.prestigePoints,
+    crystals: state.crystals,
+    stats: state.stats,
+    achievements: state.achievements,
+    talents: state.talents,
+    unlockedAutomations: state.unlockedAutomations,
+    automationOn: state.automationOn,
+    lastClaimDay: state.lastClaimDay,
+    loginStreak: state.loginStreak,
+    dayStart: state.dayStart,
+    dailyChallengesDone: state.dailyChallengesDone,
+    completedChallenges: state.completedChallenges,
+  };
+}
+
+export function startChallenge(state: GameState, id: string): GameState {
+  if (!CHALLENGES_BY_ID[id] || state.activeChallenge) return state;
+  return { ...freshRun(state), activeChallenge: id };
+}
+
+export function canCompleteChallenge(state: GameState): boolean {
+  if (!state.activeChallenge) return false;
+  const def = CHALLENGES_BY_ID[state.activeChallenge];
+  return !!def && state.oreThisRun >= def.goal;
+}
+
+export function completeChallenge(state: GameState): GameState {
+  if (!canCompleteChallenge(state) || !state.activeChallenge) return state;
+  const id = state.activeChallenge;
+  const completedChallenges = state.completedChallenges.includes(id)
+    ? state.completedChallenges
+    : [...state.completedChallenges, id];
+  return freshRun({ ...state, completedChallenges });
+}
+
+export function abandonChallenge(state: GameState): GameState {
+  if (!state.activeChallenge) return state;
+  return freshRun(state);
 }

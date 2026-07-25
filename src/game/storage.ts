@@ -97,6 +97,10 @@ function normalize(parsed: Partial<GameState>): GameState {
     dailyChallengesDone: Array.isArray(parsed.dailyChallengesDone)
       ? parsed.dailyChallengesDone
       : [],
+    activeChallenge: typeof parsed.activeChallenge === 'string' ? parsed.activeChallenge : null,
+    completedChallenges: Array.isArray(parsed.completedChallenges)
+      ? parsed.completedChallenges
+      : [],
   };
 }
 

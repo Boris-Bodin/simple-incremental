@@ -12,9 +12,14 @@ import {
   activeBoostMultiplier,
   ascensionGain,
   canAscend,
+  abandonChallenge,
+  canCompleteChallenge,
   canRefine,
+  challengeRewardMultiplier,
   claimDailyChallenge,
+  completeChallenge,
   crystalMultiplier,
+  startChallenge,
   currentEra,
   dailyChallengeProgress,
   doAscension,
@@ -522,6 +527,61 @@ describe('ascension', () => {
   it('folds crystals into the global multiplier', () => {
     expect(crystalMultiplier(withState({ crystals: 3 }))).toBeCloseTo(1.3);
     expect(globalMultiplier(withState({ crystals: 3 }))).toBeCloseTo(1.3);
+  });
+});
+
+describe('prestige challenges', () => {
+  it('starts a challenge, resetting ore but keeping generators and meta', () => {
+    const s = startChallenge(
+      withState({
+        ore: 500,
+        oreThisRun: 500,
+        generators: { apprentice: 3 },
+        crystals: 2,
+        talents: { 'deep-veins': 1 },
+      }),
+      'bare-hands',
+    );
+    expect(s.activeChallenge).toBe('bare-hands');
+    expect(s.ore).toBe(0);
+    expect(s.oreThisRun).toBe(0);
+    expect(s.generators).toEqual({ apprentice: 3 });
+    expect(s.crystals).toBe(2);
+    expect(s.talents).toEqual({ 'deep-veins': 1 });
+  });
+
+  it('applies the no-click modifier', () => {
+    const s = startChallenge(initialState(), 'bare-hands');
+    expect(clickPower(s)).toBe(0);
+  });
+
+  it('applies the no-generators modifier', () => {
+    const s = { ...startChallenge(initialState(), 'no-machines'), generators: { 'auto-mine': 10 } };
+    expect(productionPerSecond(s)).toBe(0);
+  });
+
+  it('applies the inflation modifier to costs', () => {
+    const s = startChallenge(initialState(), 'inflation');
+    expect(generatorCost({ ...s, generators: { apprentice: 1 } }, 'apprentice')).toBe(
+      Math.ceil(15 * 1.3),
+    );
+  });
+
+  it('completes only at the goal and grants a permanent reward once', () => {
+    const active = startChallenge(initialState(), 'no-machines');
+    expect(canCompleteChallenge({ ...active, oreThisRun: 50_000 })).toBe(false);
+    const done = completeChallenge({ ...active, oreThisRun: 100_000 });
+    expect(done.completedChallenges).toEqual(['no-machines']);
+    expect(done.activeChallenge).toBeNull();
+    expect(challengeRewardMultiplier(done)).toBeCloseTo(1.5);
+    expect(globalMultiplier(done)).toBeCloseTo(1.5);
+  });
+
+  it('abandons a challenge without a reward', () => {
+    const active = startChallenge(initialState(), 'bare-hands');
+    const abandoned = abandonChallenge({ ...active, oreThisRun: 999 });
+    expect(abandoned.activeChallenge).toBeNull();
+    expect(abandoned.completedChallenges).toEqual([]);
   });
 });
 
