@@ -4,9 +4,15 @@ import {
   achievementMultiplier,
   activateBoost,
   activeBoostMultiplier,
+  bestAffordableGeneratorId,
   bestBuyGeneratorId,
   buyTalent,
   canBuyTalent,
+  canUnlockAutomation,
+  isAutomationOn,
+  runAutomation,
+  toggleAutomation,
+  unlockAutomation,
   canClaimDaily,
   claimDaily,
   critChance,
@@ -407,6 +413,50 @@ describe('talents', () => {
     const refunded = respecTalents(invested);
     expect(refunded.talents).toEqual({});
     expect(refunded.prestigePoints).toBe(invested.prestigePoints + spent);
+  });
+});
+
+describe('automation', () => {
+  it('unlocks an automation for gems and turns it on', () => {
+    const s = unlockAutomation(withState({ prestigePoints: 10 }), 'auto-click');
+    expect(s.prestigePoints).toBe(5);
+    expect(isAutomationOn(s, 'auto-click')).toBe(true);
+  });
+
+  it('cannot unlock without enough gems', () => {
+    const before = withState({ prestigePoints: 1 });
+    expect(canUnlockAutomation(before, 'auto-click')).toBe(false);
+    expect(unlockAutomation(before, 'auto-click')).toBe(before);
+  });
+
+  it('toggles an unlocked automation off and on', () => {
+    const unlocked = unlockAutomation(withState({ prestigePoints: 10 }), 'auto-click');
+    const off = toggleAutomation(unlocked, 'auto-click');
+    expect(isAutomationOn(off, 'auto-click')).toBe(false);
+    expect(isAutomationOn(toggleAutomation(off, 'auto-click'), 'auto-click')).toBe(true);
+  });
+
+  it('bestAffordableGeneratorId ignores what you cannot afford', () => {
+    expect(bestAffordableGeneratorId(withState({ ore: 0 }))).toBeNull();
+    expect(bestAffordableGeneratorId(withState({ ore: 20 }))).toBe('apprentice');
+  });
+
+  it('auto-click mines each run when enabled', () => {
+    const s = unlockAutomation(withState({ prestigePoints: 10 }), 'auto-click');
+    const after = runAutomation(s);
+    expect(after.clicks).toBe(1);
+    expect(after.ore).toBeGreaterThan(s.ore);
+  });
+
+  it('auto-buy-gen buys an affordable generator when enabled', () => {
+    const s = unlockAutomation(withState({ prestigePoints: 100, ore: 15 }), 'auto-buy-gen');
+    const after = runAutomation(s);
+    expect(ownedOf(after, 'apprentice')).toBe(1);
+  });
+
+  it('does nothing when automations are disabled', () => {
+    const s = withState({ ore: 1e6 });
+    expect(runAutomation(s)).toBe(s);
   });
 });
 

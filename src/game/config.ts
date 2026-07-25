@@ -1,5 +1,6 @@
 import type {
   AchievementDef,
+  AutomationDef,
   GameState,
   GeneratorDef,
   Meteo,
@@ -77,6 +78,37 @@ export const TALENTS: TalentDef[] = [
 
 export const TALENTS_BY_ID: Record<string, TalentDef> = Object.fromEntries(
   TALENTS.map((t) => [t.id, t]),
+);
+
+export const AUTOMATIONS: AutomationDef[] = [
+  {
+    id: 'auto-click',
+    name: 'Auto-miner',
+    description: 'Swings the pickaxe for you every tick.',
+    cost: 5,
+  },
+  {
+    id: 'auto-buy-gen',
+    name: 'Generator autobuyer',
+    description: 'Buys the most cost-effective generator you can afford.',
+    cost: 15,
+  },
+  {
+    id: 'auto-buy-upg',
+    name: 'Upgrade autobuyer',
+    description: 'Buys the next affordable upgrade automatically.',
+    cost: 25,
+  },
+  {
+    id: 'auto-prestige',
+    name: 'Auto-prestige',
+    description: 'Resets automatically as soon as a gem is available.',
+    cost: 60,
+  },
+];
+
+export const AUTOMATIONS_BY_ID: Record<string, AutomationDef> = Object.fromEntries(
+  AUTOMATIONS.map((a) => [a.id, a]),
 );
 
 export const METEO_POOL: Meteo[] = [

@@ -79,6 +79,13 @@ function normalize(parsed: Partial<GameState>): GameState {
     stats,
     talents,
     activeBoosts: [],
+    unlockedAutomations: Array.isArray(parsed.unlockedAutomations)
+      ? parsed.unlockedAutomations
+      : [],
+    automationOn:
+      typeof parsed.automationOn === 'object' && parsed.automationOn !== null
+        ? parsed.automationOn
+        : {},
     lastClaimDay: typeof parsed.lastClaimDay === 'string' ? parsed.lastClaimDay : '',
     loginStreak: typeof parsed.loginStreak === 'number' ? parsed.loginStreak : 0,
   };

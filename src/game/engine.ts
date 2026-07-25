@@ -1,6 +1,7 @@
 import {
   ACHIEVEMENT_BONUS,
   ACHIEVEMENTS,
+  AUTOMATIONS_BY_ID,
   COST_GROWTH,
   CRIT_CHANCE,
   CRIT_MULTIPLIER,
@@ -12,6 +13,7 @@ import {
   PRESTIGE_ORE_PER_POINT,
   TALENTS,
   TALENTS_BY_ID,
+  UPGRADES,
   UPGRADES_BY_ID,
 } from './config';
 import { dayKey, isNextDay } from './daily';
@@ -29,6 +31,8 @@ export function initialState(): GameState {
     achievements: [],
     activeBoosts: [],
     talents: {},
+    unlockedAutomations: [],
+    automationOn: {},
     lastClaimDay: '',
     loginStreak: 0,
     lastSeen: Date.now(),
@@ -94,6 +98,72 @@ export function respecTalents(state: GameState): GameState {
   const refund = talentPointsSpent(state);
   if (refund === 0) return state;
   return { ...state, prestigePoints: state.prestigePoints + refund, talents: {} };
+}
+
+export function isAutomationUnlocked(state: GameState, id: string): boolean {
+  return state.unlockedAutomations.includes(id);
+}
+
+export function isAutomationOn(state: GameState, id: string): boolean {
+  return isAutomationUnlocked(state, id) && state.automationOn[id] === true;
+}
+
+export function canUnlockAutomation(state: GameState, id: string): boolean {
+  const def = AUTOMATIONS_BY_ID[id];
+  return !!def && !isAutomationUnlocked(state, id) && state.prestigePoints >= def.cost;
+}
+
+export function unlockAutomation(state: GameState, id: string): GameState {
+  if (!canUnlockAutomation(state, id)) return state;
+  const def = AUTOMATIONS_BY_ID[id];
+  return {
+    ...state,
+    prestigePoints: state.prestigePoints - def.cost,
+    unlockedAutomations: [...state.unlockedAutomations, id],
+    automationOn: { ...state.automationOn, [id]: true },
+  };
+}
+
+export function toggleAutomation(state: GameState, id: string): GameState {
+  if (!isAutomationUnlocked(state, id)) return state;
+  return { ...state, automationOn: { ...state.automationOn, [id]: !state.automationOn[id] } };
+}
+
+export function bestAffordableGeneratorId(state: GameState): string | null {
+  let bestId: string | null = null;
+  let bestRatio = -Infinity;
+  for (const def of GENERATORS) {
+    if (!canAffordGenerator(state, def.id)) continue;
+    const ratio = productionAddedBy(state, def.id) / generatorCost(state, def.id);
+    if (ratio > bestRatio) {
+      bestRatio = ratio;
+      bestId = def.id;
+    }
+  }
+  return bestId;
+}
+
+export function firstAffordableUpgradeId(state: GameState): string | null {
+  return UPGRADES.find((def) => canAffordUpgrade(state, def.id))?.id ?? null;
+}
+
+export function runAutomation(state: GameState): GameState {
+  let next = state;
+  if (isAutomationOn(next, 'auto-click')) {
+    next = mine(next);
+  }
+  if (isAutomationOn(next, 'auto-buy-gen')) {
+    const id = bestAffordableGeneratorId(next);
+    if (id) next = buyGenerator(next, id);
+  }
+  if (isAutomationOn(next, 'auto-buy-upg')) {
+    const id = firstAffordableUpgradeId(next);
+    if (id) next = buyUpgrade(next, id);
+  }
+  if (isAutomationOn(next, 'auto-prestige') && canPrestige(next)) {
+    next = doPrestige(next);
+  }
+  return next;
 }
 
 export function ownedOf(state: GameState, generatorId: string): number {
@@ -349,6 +419,8 @@ export function doPrestige(state: GameState): GameState {
     stats: { ...state.stats, prestiges: state.stats.prestiges + 1 },
     achievements: state.achievements,
     talents: state.talents,
+    unlockedAutomations: state.unlockedAutomations,
+    automationOn: state.automationOn,
     lastClaimDay: state.lastClaimDay,
     loginStreak: state.loginStreak,
   };

@@ -44,9 +44,18 @@ export interface GameState {
   achievements: string[];
   activeBoosts: Boost[];
   talents: Record<string, number>;
+  unlockedAutomations: string[];
+  automationOn: Record<string, boolean>;
   lastClaimDay: string;
   loginStreak: number;
   lastSeen: number;
+}
+
+export interface AutomationDef {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
 }
 
 export type TalentEffect =
