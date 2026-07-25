@@ -93,6 +93,17 @@
   font-weight: 600;
 }
 
+.resource-era {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--gem-soft);
+  color: var(--gem);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.78rem;
+  align-self: center;
+}
+
 .resource-stats {
   display: flex;
   align-items: center;

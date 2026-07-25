@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { formatNumber, formatRate, type Notation } from '../game/format';
-import { productionPerSecond } from '../game/engine';
+import { currentEra, productionPerSecond } from '../game/engine';
 import type { JuiceLevel } from '../game/settings';
 import type { GameState } from '../game/types';
 import { GemIcon } from './icons';
@@ -35,6 +35,7 @@ export function ResourceHeader({ state, notation, juice }: Props) {
       <div className="resource-main">
         <span className="resource-amount">{formatNumber(state.ore, notation)}</span>
         <span className="resource-label">ore</span>
+        <span className="resource-era">{currentEra(state).name}</span>
       </div>
       <div className="resource-stats">
         <span>{formatRate(productionPerSecond(state), notation)}</span>
