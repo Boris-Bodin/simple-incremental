@@ -13,8 +13,11 @@ import {
   ascensionGain,
   canAscend,
   abandonChallenge,
+  alloyMultiplier,
   canCompleteChallenge,
+  canForgeAlloy,
   canRefine,
+  forgeAlloy,
   challengeRewardMultiplier,
   claimDailyChallenge,
   completeChallenge,
@@ -458,6 +461,37 @@ describe('currentEra', () => {
   it('reflects the deepest generator, not the newest bought', () => {
     const s = withState({ generators: { 'reality-miner': 1, apprentice: 5 } });
     expect(currentEra(s).name).toBe('Dimensional Age');
+  });
+});
+
+describe('shards and alloys', () => {
+  it('drops a shard on a critical hit', () => {
+    expect(mineCritical(initialState()).shards).toBe(1);
+  });
+
+  it('forges an alloy from ingots and shards', () => {
+    const s = forgeAlloy(withState({ ingots: 6, shards: 12 }));
+    expect(s.alloys).toBe(1);
+    expect(s.ingots).toBe(1);
+    expect(s.shards).toBe(2);
+  });
+
+  it('cannot forge without enough materials', () => {
+    const before = withState({ ingots: 4, shards: 100 });
+    expect(canForgeAlloy(before)).toBe(false);
+    expect(forgeAlloy(before)).toBe(before);
+  });
+
+  it('boosts the global multiplier per alloy', () => {
+    expect(alloyMultiplier(withState({ alloys: 2 }))).toBeCloseTo(1.5);
+    expect(globalMultiplier(withState({ alloys: 2 }))).toBeCloseTo(1.5);
+  });
+
+  it('keeps shards and alloys through prestige', () => {
+    const before = withState({ oreThisRun: 4 * PRESTIGE_ORE_PER_POINT, shards: 7, alloys: 3 });
+    const after = doPrestige(before);
+    expect(after.shards).toBe(7);
+    expect(after.alloys).toBe(3);
   });
 });
 

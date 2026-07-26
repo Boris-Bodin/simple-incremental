@@ -84,6 +84,10 @@ export const REFINE_BASE_COST = 1000;
 export const REFINE_GROWTH = 1.8;
 export const INGOT_BONUS = 0.05;
 
+export const ALLOY_INGOT_COST = 5;
+export const ALLOY_SHARD_COST = 10;
+export const ALLOY_BONUS = 0.25;
+
 export const FRENZY_MULTIPLIER = 3;
 export const FRENZY_DURATION_MS = 60_000;
 export const FRENZY_COOLDOWN_MS = 600_000;

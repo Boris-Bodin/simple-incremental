@@ -1,6 +1,9 @@
 import {
   ACHIEVEMENT_BONUS,
   ACHIEVEMENTS,
+  ALLOY_BONUS,
+  ALLOY_INGOT_COST,
+  ALLOY_SHARD_COST,
   ASCENSION_GEMS_PER_CRYSTAL,
   AUTOMATIONS_BY_ID,
   CHALLENGES_BY_ID,
@@ -38,6 +41,8 @@ export function initialState(): GameState {
     prestigePoints: 0,
     crystals: 0,
     ingots: 0,
+    shards: 0,
+    alloys: 0,
     stats: { ore: 0, clicks: 0, criticals: 0, prestiges: 0, ascensions: 0 },
     achievements: [],
     activeBoosts: [],
@@ -229,6 +234,24 @@ export function refine(state: GameState): GameState {
   return { ...state, ore: state.ore - ingotCost(state), ingots: state.ingots + 1 };
 }
 
+export function alloyMultiplier(state: GameState): number {
+  return 1 + state.alloys * ALLOY_BONUS;
+}
+
+export function canForgeAlloy(state: GameState): boolean {
+  return state.ingots >= ALLOY_INGOT_COST && state.shards >= ALLOY_SHARD_COST;
+}
+
+export function forgeAlloy(state: GameState): GameState {
+  if (!canForgeAlloy(state)) return state;
+  return {
+    ...state,
+    ingots: state.ingots - ALLOY_INGOT_COST,
+    shards: state.shards - ALLOY_SHARD_COST,
+    alloys: state.alloys + 1,
+  };
+}
+
 export function activeBoostMultiplier(state: GameState): number {
   return state.activeBoosts.reduce((acc, boost) => acc * boost.multiplier, 1);
 }
@@ -245,6 +268,7 @@ export function globalMultiplier(state: GameState): number {
     activeBoostMultiplier(state) *
     crystalMultiplier(state) *
     ingotMultiplier(state) *
+    alloyMultiplier(state) *
     challengeRewardMultiplier(state)
   );
 }
@@ -454,7 +478,8 @@ export function mine(state: GameState): GameState {
 }
 
 export function mineCritical(state: GameState): GameState {
-  return registerClick(gain(state, clickPower(state) * CRIT_MULTIPLIER), true);
+  const next = registerClick(gain(state, clickPower(state) * CRIT_MULTIPLIER), true);
+  return { ...next, shards: next.shards + 1 };
 }
 
 export function newlyUnlockedAchievements(state: GameState): string[] {
@@ -533,6 +558,8 @@ export function doPrestige(state: GameState): GameState {
     ...initialState(),
     prestigePoints: state.prestigePoints + gained,
     crystals: state.crystals,
+    shards: state.shards,
+    alloys: state.alloys,
     stats: { ...state.stats, prestiges: state.stats.prestiges + 1 },
     achievements: state.achievements,
     talents: state.talents,
@@ -564,6 +591,8 @@ export function doAscension(state: GameState): GameState {
   return {
     ...initialState(),
     crystals: state.crystals + gained,
+    shards: state.shards,
+    alloys: state.alloys,
     stats: { ...state.stats, ascensions: state.stats.ascensions + 1 },
     achievements: state.achievements,
     lastClaimDay: state.lastClaimDay,
@@ -582,6 +611,8 @@ function freshRun(state: GameState): GameState {
     ingots: state.ingots,
     prestigePoints: state.prestigePoints,
     crystals: state.crystals,
+    shards: state.shards,
+    alloys: state.alloys,
     stats: state.stats,
     achievements: state.achievements,
     talents: state.talents,
