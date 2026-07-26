@@ -13,6 +13,7 @@ import { GoldenOre } from './components/GoldenOre';
 import { OfflineNotice } from './components/OfflineNotice';
 import { PrestigePanel } from './components/PrestigePanel';
 import { RefineryPanel } from './components/RefineryPanel';
+import { ResearchPanel } from './components/ResearchPanel';
 import { ResourceHeader } from './components/ResourceHeader';
 import { SettingsPanel } from './components/SettingsPanel';
 import { StatsPanel } from './components/StatsPanel';
@@ -124,6 +125,14 @@ export function App() {
             onRespec={game.respecTalents}
           />
         </div>
+      )}
+
+      {tab === 'research' && (
+        <ResearchPanel
+          state={game.state}
+          notation={settings.notation}
+          onResearch={game.research}
+        />
       )}
 
       {tab === 'stats' && (

@@ -258,6 +258,11 @@
   margin-right: 4px;
 }
 
+.card.is-done {
+  border-color: var(--good);
+  opacity: 0.85;
+}
+
 .card:not(:disabled):hover {
   background: var(--bg-card-hover);
   border-color: var(--accent);

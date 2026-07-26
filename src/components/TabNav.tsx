@@ -1,7 +1,7 @@
 import type { ComponentType, SVGProps } from 'react';
-import { GemIcon, PickaxeIcon, SettingsIcon, TrophyIcon } from './icons';
+import { FlaskIcon, GemIcon, PickaxeIcon, SettingsIcon, TrophyIcon } from './icons';
 
-export type TabId = 'mining' | 'prestige' | 'stats' | 'settings';
+export type TabId = 'mining' | 'prestige' | 'research' | 'stats' | 'settings';
 
 interface Props {
   active: TabId;
@@ -12,6 +12,7 @@ interface Props {
 const TABS: { id: TabId; label: string; Icon: ComponentType<SVGProps<SVGSVGElement>> }[] = [
   { id: 'mining', label: 'Mining', Icon: PickaxeIcon },
   { id: 'prestige', label: 'Prestige', Icon: GemIcon },
+  { id: 'research', label: 'Research', Icon: FlaskIcon },
   { id: 'stats', label: 'Stats', Icon: TrophyIcon },
   { id: 'settings', label: 'Settings', Icon: SettingsIcon },
 ];

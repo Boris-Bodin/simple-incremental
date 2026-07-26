@@ -36,6 +36,7 @@ import {
   mineCritical,
   newlyUnlockedAchievements,
   refine,
+  research,
   respecTalents,
   runAutomation,
   tick,
@@ -89,6 +90,7 @@ export interface GameApi {
   ascend: () => void;
   refine: () => void;
   forgeAlloy: () => void;
+  research: (id: string) => void;
   startChallenge: (id: string) => void;
   completeChallenge: () => void;
   abandonChallenge: () => void;
@@ -300,6 +302,7 @@ export function useGame(): GameApi {
   const ascend = useCallback(() => setState(doAscension), []);
   const refineOre = useCallback(() => setState(refine), []);
   const forge = useCallback(() => setState(forgeAlloy), []);
+  const researchNode = useCallback((id: string) => setState((prev) => research(prev, id)), []);
   const startChallengeAction = useCallback(
     (id: string) => setState((prev) => startChallenge(prev, id)),
     [],
@@ -350,6 +353,7 @@ export function useGame(): GameApi {
     ascend,
     refine: refineOre,
     forgeAlloy: forge,
+    research: researchNode,
     startChallenge: startChallengeAction,
     completeChallenge: completeChallengeAction,
     abandonChallenge: abandonChallengeAction,
