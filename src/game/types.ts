@@ -45,6 +45,8 @@ export interface GameState {
   ingots: number;
   shards: number;
   alloys: number;
+  science: number;
+  research: string[];
   stats: LifetimeStats;
   achievements: string[];
   activeBoosts: Boost[];
@@ -92,6 +94,20 @@ export interface AutomationDef {
   name: string;
   description: string;
   cost: number;
+}
+
+export type ResearchEffect =
+  | { kind: 'global'; multiplier: number }
+  | { kind: 'click'; multiplier: number }
+  | { kind: 'science'; multiplier: number };
+
+export interface ResearchDef {
+  id: string;
+  name: string;
+  description: string;
+  cost: number;
+  requires: string | null;
+  effect: ResearchEffect;
 }
 
 export type TalentEffect =

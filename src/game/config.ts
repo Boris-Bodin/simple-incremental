@@ -7,6 +7,7 @@ import type {
   GameState,
   GeneratorDef,
   Meteo,
+  ResearchDef,
   TalentDef,
   UpgradeDef,
 } from './types';
@@ -87,6 +88,8 @@ export const INGOT_BONUS = 0.05;
 export const ALLOY_INGOT_COST = 5;
 export const ALLOY_SHARD_COST = 10;
 export const ALLOY_BONUS = 0.25;
+
+export const SCIENCE_PER_GENERATOR_TYPE = 0.05;
 
 export const FRENZY_MULTIPLIER = 3;
 export const FRENZY_DURATION_MS = 60_000;
@@ -179,6 +182,61 @@ export const AUTOMATIONS: AutomationDef[] = [
 
 export const AUTOMATIONS_BY_ID: Record<string, AutomationDef> = Object.fromEntries(
   AUTOMATIONS.map((a) => [a.id, a]),
+);
+
+export const RESEARCH: ResearchDef[] = [
+  {
+    id: 'prospecting',
+    name: 'Prospecting',
+    description: '+25% global production.',
+    cost: 3,
+    requires: null,
+    effect: { kind: 'global', multiplier: 1.25 },
+  },
+  {
+    id: 'geology',
+    name: 'Geology',
+    description: 'Doubles science output.',
+    cost: 8,
+    requires: 'prospecting',
+    effect: { kind: 'science', multiplier: 2 },
+  },
+  {
+    id: 'seismics',
+    name: 'Seismic surveys',
+    description: '+50% global production.',
+    cost: 30,
+    requires: 'geology',
+    effect: { kind: 'global', multiplier: 1.5 },
+  },
+  {
+    id: 'metallurgy',
+    name: 'Metallurgy',
+    description: 'Doubles manual mining power.',
+    cost: 10,
+    requires: 'prospecting',
+    effect: { kind: 'click', multiplier: 2 },
+  },
+  {
+    id: 'nanotech',
+    name: 'Nanotech',
+    description: 'Doubles global production.',
+    cost: 40,
+    requires: 'metallurgy',
+    effect: { kind: 'global', multiplier: 2 },
+  },
+  {
+    id: 'ai-research',
+    name: 'Research AI',
+    description: 'Triples science output.',
+    cost: 100,
+    requires: 'nanotech',
+    effect: { kind: 'science', multiplier: 3 },
+  },
+];
+
+export const RESEARCH_BY_ID: Record<string, ResearchDef> = Object.fromEntries(
+  RESEARCH.map((r) => [r.id, r]),
 );
 
 export const METEO_POOL: Meteo[] = [

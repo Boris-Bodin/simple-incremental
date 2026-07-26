@@ -81,6 +81,8 @@ function normalize(parsed: Partial<GameState>): GameState {
     ingots: typeof parsed.ingots === 'number' ? parsed.ingots : 0,
     shards: typeof parsed.shards === 'number' ? parsed.shards : 0,
     alloys: typeof parsed.alloys === 'number' ? parsed.alloys : 0,
+    science: typeof parsed.science === 'number' ? parsed.science : 0,
+    research: Array.isArray(parsed.research) ? parsed.research : [],
     talents,
     activeBoosts: [],
     unlockedAutomations: Array.isArray(parsed.unlockedAutomations)

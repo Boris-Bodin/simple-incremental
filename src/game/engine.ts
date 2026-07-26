@@ -23,13 +23,22 @@ import {
   GENERATORS,
   GENERATORS_BY_ID,
   PRESTIGE_ORE_PER_POINT,
+  RESEARCH,
+  RESEARCH_BY_ID,
+  SCIENCE_PER_GENERATOR_TYPE,
   TALENTS,
   TALENTS_BY_ID,
   UPGRADES,
   UPGRADES_BY_ID,
 } from './config';
 import { dailyChallengeIds, dayKey, isNextDay } from './daily';
-import type { DailyMetric, EraDef, GameState, TalentEffect } from './types';
+import type {
+  DailyMetric,
+  EraDef,
+  GameState,
+  ResearchEffect,
+  TalentEffect,
+} from './types';
 
 export function initialState(): GameState {
   return {
@@ -43,6 +52,8 @@ export function initialState(): GameState {
     ingots: 0,
     shards: 0,
     alloys: 0,
+    science: 0,
+    research: [],
     stats: { ore: 0, clicks: 0, criticals: 0, prestiges: 0, ascensions: 0 },
     achievements: [],
     activeBoosts: [],
@@ -252,6 +263,64 @@ export function forgeAlloy(state: GameState): GameState {
   };
 }
 
+export function isResearched(state: GameState, id: string): boolean {
+  return state.research.includes(id);
+}
+
+function researchMultiplier(state: GameState, kind: ResearchEffect['kind']): number {
+  return RESEARCH.reduce((acc, def) => {
+    if (def.effect.kind !== kind || !isResearched(state, def.id)) return acc;
+    return acc * def.effect.multiplier;
+  }, 1);
+}
+
+export function researchGlobalMultiplier(state: GameState): number {
+  return researchMultiplier(state, 'global');
+}
+
+export function researchClickMultiplier(state: GameState): number {
+  return researchMultiplier(state, 'click');
+}
+
+export function researchScienceMultiplier(state: GameState): number {
+  return researchMultiplier(state, 'science');
+}
+
+export function generatorTypesOwned(state: GameState): number {
+  return Object.values(state.generators).filter((count) => count > 0).length;
+}
+
+export function scienceRate(state: GameState): number {
+  return (
+    generatorTypesOwned(state) * SCIENCE_PER_GENERATOR_TYPE * researchScienceMultiplier(state)
+  );
+}
+
+export function researchPrerequisiteMet(state: GameState, id: string): boolean {
+  const def = RESEARCH_BY_ID[id];
+  return !!def && (def.requires === null || isResearched(state, def.requires));
+}
+
+export function canResearch(state: GameState, id: string): boolean {
+  const def = RESEARCH_BY_ID[id];
+  return (
+    !!def &&
+    !isResearched(state, id) &&
+    researchPrerequisiteMet(state, id) &&
+    state.science >= def.cost
+  );
+}
+
+export function research(state: GameState, id: string): GameState {
+  if (!canResearch(state, id)) return state;
+  const def = RESEARCH_BY_ID[id];
+  return {
+    ...state,
+    science: state.science - def.cost,
+    research: [...state.research, id],
+  };
+}
+
 export function activeBoostMultiplier(state: GameState): number {
   return state.activeBoosts.reduce((acc, boost) => acc * boost.multiplier, 1);
 }
@@ -269,6 +338,7 @@ export function globalMultiplier(state: GameState): number {
     crystalMultiplier(state) *
     ingotMultiplier(state) *
     alloyMultiplier(state) *
+    researchGlobalMultiplier(state) *
     challengeRewardMultiplier(state)
   );
 }
@@ -351,7 +421,12 @@ export function clickPower(state: GameState): number {
     const effect = UPGRADES_BY_ID[id]?.effect;
     return effect?.kind === 'click' ? acc * effect.multiplier : acc;
   }, 1);
-  return fromUpgrades * talentClickMultiplier(state) * globalMultiplier(state);
+  return (
+    fromUpgrades *
+    talentClickMultiplier(state) *
+    researchClickMultiplier(state) *
+    globalMultiplier(state)
+  );
 }
 
 function generatorMultiplier(state: GameState, generatorId: string): number {
@@ -540,7 +615,9 @@ export function tick(state: GameState, deltaSeconds: number, now = Date.now()): 
   if (deltaSeconds <= 0) return state;
   const pruned = expireBoosts(state, now);
   const produced = productionPerSecond(pruned) * deltaSeconds;
-  return produced > 0 ? gain(pruned, produced) : pruned;
+  const science = scienceRate(pruned) * deltaSeconds;
+  const withOre = produced > 0 ? gain(pruned, produced) : pruned;
+  return science > 0 ? { ...withOre, science: withOre.science + science } : withOre;
 }
 
 export function prestigeGain(state: GameState): number {
@@ -560,6 +637,8 @@ export function doPrestige(state: GameState): GameState {
     crystals: state.crystals,
     shards: state.shards,
     alloys: state.alloys,
+    science: state.science,
+    research: state.research,
     stats: { ...state.stats, prestiges: state.stats.prestiges + 1 },
     achievements: state.achievements,
     talents: state.talents,
@@ -593,6 +672,8 @@ export function doAscension(state: GameState): GameState {
     crystals: state.crystals + gained,
     shards: state.shards,
     alloys: state.alloys,
+    science: state.science,
+    research: state.research,
     stats: { ...state.stats, ascensions: state.stats.ascensions + 1 },
     achievements: state.achievements,
     lastClaimDay: state.lastClaimDay,
@@ -613,6 +694,8 @@ function freshRun(state: GameState): GameState {
     crystals: state.crystals,
     shards: state.shards,
     alloys: state.alloys,
+    science: state.science,
+    research: state.research,
     stats: state.stats,
     achievements: state.achievements,
     talents: state.talents,

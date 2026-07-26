@@ -72,6 +72,10 @@ import {
   prestigeGain,
   productionAddedBy,
   productionPerSecond,
+  canResearch,
+  research,
+  researchGlobalMultiplier,
+  scienceRate,
   tick,
 } from './engine';
 import type { Boost } from './types';
@@ -492,6 +496,63 @@ describe('shards and alloys', () => {
     const after = doPrestige(before);
     expect(after.shards).toBe(7);
     expect(after.alloys).toBe(3);
+  });
+});
+
+describe('research', () => {
+  it('accrues science per distinct generator type owned', () => {
+    expect(scienceRate(withState({ generators: { apprentice: 5 } }))).toBeCloseTo(0.05);
+    expect(scienceRate(withState({ generators: { apprentice: 5, 'hand-drill': 2 } }))).toBeCloseTo(
+      0.1,
+    );
+  });
+
+  it('accumulates science over time in tick', () => {
+    const s = tick(withState({ generators: { apprentice: 1 } }), 10);
+    expect(s.science).toBeCloseTo(0.5);
+  });
+
+  it('requires the prerequisite node before researching', () => {
+    expect(canResearch(withState({ science: 100 }), 'prospecting')).toBe(true);
+    expect(canResearch(withState({ science: 100 }), 'geology')).toBe(false);
+    expect(canResearch(withState({ science: 100, research: ['prospecting'] }), 'geology')).toBe(
+      true,
+    );
+  });
+
+  it('cannot research without enough science', () => {
+    const before = withState({ science: 2 });
+    expect(canResearch(before, 'prospecting')).toBe(false);
+    expect(research(before, 'prospecting')).toBe(before);
+  });
+
+  it('spends science and records the node', () => {
+    const s = research(withState({ science: 5 }), 'prospecting');
+    expect(s.science).toBe(2);
+    expect(s.research).toEqual(['prospecting']);
+  });
+
+  it('boosts the global multiplier once a node is researched', () => {
+    expect(researchGlobalMultiplier(withState({ research: ['prospecting'] }))).toBeCloseTo(1.25);
+    expect(globalMultiplier(withState({ research: ['prospecting'] }))).toBeCloseTo(1.25);
+  });
+
+  it('boosts science output with the geology node', () => {
+    const owned = { generators: { apprentice: 1 } };
+    expect(scienceRate(withState({ ...owned, research: ['prospecting', 'geology'] }))).toBeCloseTo(
+      0.1,
+    );
+  });
+
+  it('keeps science and research through prestige', () => {
+    const before = withState({
+      oreThisRun: 4 * PRESTIGE_ORE_PER_POINT,
+      science: 42,
+      research: ['prospecting'],
+    });
+    const after = doPrestige(before);
+    expect(after.science).toBe(42);
+    expect(after.research).toEqual(['prospecting']);
   });
 });
 
