@@ -28,8 +28,8 @@
 - Chaque lot : TDD domaine → UI → typecheck/tests/build → smoke test navigateur → commit.
 
 ## Critères d'acceptation (par lot)
-- [ ] **4A** : 3 défis/jour identiques pour une date donnée ; progression = delta du jour ; claim octroie les gemmes une seule fois ; reset au changement de jour.
-- [ ] **4B** : le modificateur s'applique pendant le défi ; la récompense permanente n'est accordée qu'une fois.
-- [ ] **4C** : drop déterministe sous RNG mocké ; recette d'alliage respecte les coûts.
-- [ ] **4D** : la science s'accumule ; un nœud débloqué applique son effet.
-- [ ] Pour chaque lot : save antérieure chargée sans crash, `yarn typecheck`/`test`/`build` verts.
+- [x] **4A** : 3 défis/jour identiques pour une date donnée ; progression = delta du jour ; claim octroie les gemmes une seule fois ; reset au changement de jour.
+- [x] **4B** : le modificateur s'applique pendant le défi ; la récompense permanente n'est accordée qu'une fois.
+- [x] **4C** : drop déterministe sous RNG mocké ; recette d'alliage respecte les coûts.
+- [x] **4D** : la science s'accumule ; un nœud débloqué applique son effet.
+- [x] Pour chaque lot : save antérieure chargée sans crash, `yarn typecheck`/`test`/`build` verts.
