@@ -86,6 +86,7 @@ export function App() {
             state={game.state}
             notation={settings.notation}
             onRefine={game.refine}
+            onForge={game.forgeAlloy}
           />
           <div className="columns">
             <GeneratorList

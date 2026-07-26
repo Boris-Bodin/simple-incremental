@@ -28,6 +28,7 @@ import {
   critChance,
   doAscension,
   doPrestige,
+  forgeAlloy,
   refreshDaily,
   grantAchievements,
   initialState,
@@ -87,6 +88,7 @@ export interface GameApi {
   prestige: () => void;
   ascend: () => void;
   refine: () => void;
+  forgeAlloy: () => void;
   startChallenge: (id: string) => void;
   completeChallenge: () => void;
   abandonChallenge: () => void;
@@ -297,6 +299,7 @@ export function useGame(): GameApi {
   const prestige = useCallback(() => setState(doPrestige), []);
   const ascend = useCallback(() => setState(doAscension), []);
   const refineOre = useCallback(() => setState(refine), []);
+  const forge = useCallback(() => setState(forgeAlloy), []);
   const startChallengeAction = useCallback(
     (id: string) => setState((prev) => startChallenge(prev, id)),
     [],
@@ -346,6 +349,7 @@ export function useGame(): GameApi {
     prestige,
     ascend,
     refine: refineOre,
+    forgeAlloy: forge,
     startChallenge: startChallengeAction,
     completeChallenge: completeChallengeAction,
     abandonChallenge: abandonChallengeAction,
